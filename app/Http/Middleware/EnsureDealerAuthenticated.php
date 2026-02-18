@@ -15,6 +15,10 @@ class EnsureDealerAuthenticated
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if (! auth()->guard('dealer')->check()) {
+            return redirect()->route('dealer.login');
+        }
+
         return $next($request);
     }
 }
