@@ -5,7 +5,7 @@
 @section('content')
 <div class="min-h-[60vh] flex items-center justify-center py-8 sm:py-12 px-4 sm:px-6">
     <div class="w-full max-w-sm sm:max-w-md md:max-w-lg">
-        <div class="auth-card bg-base-100 rounded-xl border border-base-300/40 shadow-sm">
+        <div class="auth-card bg-base-100 rounded-xl border border-base-300/40 shadow-sm p-6 sm:p-8">
             <h2 class="text-xl font-semibold text-base-content mb-1">Yönetim Paneli</h2>
             <p class="text-base-content/60 mb-6">Yönetici hesabınızla giriş yapın</p>
 
