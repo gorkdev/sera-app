@@ -18,9 +18,8 @@ B2B toptan çiçek satış platformu. Bu dosya projenin genel durumunu özetler.
 ### Tamamlanan Modüller
 - **Auth** — Admin ve Bayi giriş/kayıt, çoklu guard
 - **Admin panel** — Dashboard, Kategoriler, Ürünler (CRUD)
-- **Kategoriler** — Hiyerarşik yapı, sezon, nitelikler, bölge kısıtı, gelişmiş ayarlar (hasat, iklim, belgeler, MoQ, renk, ikon, rozetler)
-- **Ürünler** — Kategori, SKU, fiyat, birim, stok, min sipariş
-- **Bayi grupları** — Veritabanı ve seeder; kategori görünürlük kısıtı
+- **Kategoriler** — Hiyerarşik yapı, görsel, aktif/pasif (her zaman açık; panelde pasife alırsa görünmez)
+- **Ürünler** — Kategori, SKU, fiyat, birim, stok, min sipariş (her zaman açık; panelde pasife alırsa görünmez)
 
 ### Henüz Tamamlanmamış
 - Bayi katalog (ürün listesi)

@@ -14,17 +14,45 @@ class Product extends Model
         'slug',
         'sku',
         'description',
+        'image',
+        'gallery_images',
         'price',
+        'cost_price',
         'unit',
+        'unit_conversions',
         'stock_quantity',
+        'critical_stock_type',
+        'critical_stock_value',
+        'critical_stock_reference',
+        'featured_badges',
+        'origin',
+        'shelf_life_days',
         'min_order_quantity',
         'is_active',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'cost_price' => 'decimal:2',
         'is_active' => 'boolean',
+        'gallery_images' => 'array',
+        'featured_badges' => 'array',
+        'unit_conversions' => 'array',
     ];
+
+    /** Stok kritik seviyeye ulaştı mı? */
+    public function isCriticalStock(): bool
+    {
+        if (! $this->critical_stock_type || $this->critical_stock_value === null) {
+            return false;
+        }
+        if ($this->critical_stock_type === 'percent') {
+            $ref = $this->critical_stock_reference ?: 100;
+            $threshold = (int) ceil($ref * $this->critical_stock_value / 100);
+            return $this->stock_quantity <= $threshold;
+        }
+        return $this->stock_quantity <= $this->critical_stock_value;
+    }
 
     public function category(): BelongsTo
     {

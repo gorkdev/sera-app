@@ -25,13 +25,6 @@ config('sera.site.name')                     // env('APP_NAME', 'Sera')
 | **sms** | NetGSM API bilgileri |
 | **site** | Site adı, bakım modu |
 | **product_units** | Ürün birimleri (adet, demet, koli vb.) |
-| **category_attributes** | Kategori ürün nitelikleri |
-| **region_cities** | Bölge kısıtı şehir listesi |
-| **region_regions** | Bölge kısıtı bölge listesi |
-| **category_required_documents** | Zorunlu belgeler |
-| **category_icons** | İkon seçenekleri |
-| **category_featured_badges** | Rozet seçenekleri |
-| **category_colors** | Renk paleti (hex → etiket) |
 
 ### cart
 
@@ -63,27 +56,3 @@ config('sera.site.name')                     // env('APP_NAME', 'Sera')
 ### product_units
 
 Ürün birimleri: adet, demet, buket, koli, paket, kutu, saksı, metre.
-
-### category_attributes
-
-Ürün nitelikleri (kategori formunda zorunlu/görünür seçimi): expiry_date, litre, germination_days, shelf_life_days, origin, stem_length_cm.
-
-### region_cities, region_regions
-
-Bölge kısıtı için autocomplete: Türkiye şehirleri ve coğrafi bölgeler (Marmara, Ege vb.).
-
-### category_required_documents
-
-Zorunlu belgeler: organic_certificate, analysis_report, phytosanitary, origin_certificate.
-
-### category_icons
-
-İkon seçenekleri: leaf, sun, droplet, flower, sparkles, fire, bolt, beaker.
-
-### category_featured_badges
-
-Rozet seçenekleri: new_season, best_seller, durable, premium, eco.
-
-### category_colors
-
-Renk paleti: hex kodları → etiket (Kırmızı, Turuncu, Yeşil vb.).

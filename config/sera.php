@@ -85,66 +85,12 @@ return [
         'maintenance_message' => env('SERA_MAINTENANCE_MESSAGE', 'Bakım yapılıyor. Kısa süre içinde hizmetinizdeyiz.'),
     ],
 
-    'category_attributes' => [
-        'expiry_date' => 'Son Kullanma Tarihi',
-        'litre' => 'Litraj',
-        'germination_days' => 'Çimlenme Süresi (gün)',
-        'shelf_life_days' => 'Raf Ömrü (gün)',
-        'origin' => 'Menşei',
-        'stem_length_cm' => 'Dal Boyu (cm)',
-    ],
-
     /*
     |--------------------------------------------------------------------------
-    | Bölge Kısıtı: Şehir ve Bölge Listesi
-    |--------------------------------------------------------------------------
-    |
-    | Kategori bölge kısıtında otomatik tamamlama için kullanılır.
-    |
-    */
-
-    'region_cities' => [
-        'adana', 'adıyaman', 'afyonkarahisar', 'ağrı', 'aksaray', 'amasya', 'ankara', 'antalya',
-        'ardahan', 'artvin', 'aydın', 'balıkesir', 'bartın', 'batman', 'bayburt', 'bilecik',
-        'bingöl', 'bitlis', 'bolu', 'burdur', 'bursa', 'çanakkale', 'çankırı', 'çorum',
-        'denizli', 'diyarbakır', 'düzce', 'edirne', 'elazığ', 'erzincan', 'erzurum', 'eskişehir',
-        'gaziantep', 'giresun', 'gümüşhane', 'hakkari', 'hatay', 'ığdır', 'isparta', 'istanbul',
-        'izmir', 'kahramanmaraş', 'karabük', 'karaman', 'kars', 'kastamonu', 'kayseri', 'kırıkkale',
-        'kırklareli', 'kırşehir', 'kilis', 'kocaeli', 'konya', 'kütahya', 'malatya', 'manisa',
-        'mardin', 'mersin', 'muğla', 'muş', 'nevşehir', 'niğde', 'ordu', 'osmaniye',
-        'rize', 'sakarya', 'samsun', 'siirt', 'sinop', 'sivas', 'şanlıurfa', 'şırnak',
-        'tekirdağ', 'tokat', 'trabzon', 'tunceli', 'uşak', 'van', 'yalova', 'yozgat', 'zonguldak',
-    ],
-
-    'region_regions' => [
-        'marmara', 'ege', 'akdeniz', 'iç anadolu', 'karadeniz', 'doğu anadolu', 'güneydoğu anadolu',
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Kategori Gelişmiş Ayarları
+    | Ürün Öne Çıkan Etiketler
     |--------------------------------------------------------------------------
     */
-
-    'category_required_documents' => [
-        'organic_certificate' => 'Organik Sertifikası',
-        'analysis_report' => 'Analiz Raporu',
-        'phytosanitary' => 'Bitki Sağlık Sertifikası',
-        'origin_certificate' => 'Menşei Belgesi',
-    ],
-
-    'category_icons' => [
-        'leaf' => 'Yaprak',
-        'sun' => 'Güneş',
-        'droplet' => 'Su Damlası',
-        'flower' => 'Çiçek',
-        'sparkles' => 'Parlak',
-        'fire' => 'Ateş',
-        'bolt' => 'Şimşek',
-        'beaker' => 'Deney',
-    ],
-
-    'category_featured_badges' => [
+    'product_featured_badges' => [
         'new_season' => 'Yeni Sezon',
         'best_seller' => 'Çok Satan',
         'durable' => 'Dayanıklı Tür',
@@ -152,21 +98,19 @@ return [
         'eco' => 'Eko Dostu',
     ],
 
-    'category_colors' => [
-        '#ef4444' => 'Kırmızı',
-        '#f97316' => 'Turuncu',
-        '#eab308' => 'Sarı',
-        '#84cc16' => 'Lime',
-        '#22c55e' => 'Yeşil',
-        '#14b8a6' => 'Teal',
-        '#06b6d4' => 'Cyan',
-        '#3b82f6' => 'Mavi',
-        '#6366f1' => 'İndigo',
-        '#8b5cf6' => 'Mor',
-        '#a855f7' => 'Violet',
-        '#ec4899' => 'Pembe',
-        '#f43f5e' => 'Rose',
-        '#78716c' => 'Kahverengi',
+    /*
+    |--------------------------------------------------------------------------
+    | Menşei Seçenekleri
+    |--------------------------------------------------------------------------
+    */
+    'origin_options' => [
+        'turkiye' => 'Türkiye',
+        'hollanda' => 'Hollanda',
+        'ekvador' => 'Ekvador',
+        'kenya' => 'Kenya',
+        'kolombiya' => 'Kolombiya',
+        'israil' => 'İsrail',
+        'diger' => 'Diğer',
     ],
 
 ];

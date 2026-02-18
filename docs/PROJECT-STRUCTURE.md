@@ -104,8 +104,6 @@ sera-app/
 │       │   │   ├── create.blade.php
 │       │   │   └── edit.blade.php
 │       │   └── partials/
-│       │       ├── category-extended-fields.blade.php
-│       │       ├── category-advanced-fields.blade.php
 │       │       └── category-slug-script.blade.php
 │       └── dealer/
 │           └── index.blade.php          # Bayi panel ana sayfa
@@ -161,7 +159,7 @@ sera-app/
 | `home.blade.php` | Anasayfa içeriği |
 | `admin/categories/*` | Kategori CRUD formları |
 | `admin/products/*` | Ürün CRUD formları |
-| `admin/partials/category-*.blade.php` | Kategori form partial'ları |
+| `admin/partials/category-slug-script.blade.php` | Kategori slug otomatik oluşturma |
 | `dealer/index.blade.php` | Bayi panel ana sayfa |
 
 ### `resources/css/app.css`

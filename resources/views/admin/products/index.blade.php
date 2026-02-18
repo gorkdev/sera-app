@@ -50,10 +50,17 @@
                 @forelse($products as $product)
                 <tr class="hover">
                     <td>
-                        <div class="font-medium">{{ $product->name }}</div>
-                        @if($product->description)
-                            <div class="text-sm text-base-content/50 mt-0.5 line-clamp-1 max-w-xs">{{ Str::limit($product->description, 40) }}</div>
-                        @endif
+                        <div class="flex items-center gap-3">
+                            @if($product->image)
+                                <img src="{{ Storage::url($product->image) }}" alt="" class="h-10 w-10 object-cover rounded border border-base-300 shrink-0" />
+                            @endif
+                            <div>
+                                <div class="font-medium">{{ $product->name }}</div>
+                                @if($product->description)
+                                    <div class="text-sm text-base-content/50 mt-0.5 line-clamp-1 max-w-xs">{{ Str::limit($product->description, 40) }}</div>
+                                @endif
+                            </div>
+                        </div>
                     </td>
                     <td class="hidden sm:table-cell">
                         <span class="badge badge-ghost badge-sm">{{ $product->category->name }}</span>

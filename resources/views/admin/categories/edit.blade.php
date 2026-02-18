@@ -109,15 +109,13 @@
                         </div>
                     @endif
                     <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp"
-                        class="file-input file-input-bordered file-input-md w-full @error('image') input-error @enderror" />
+                        class="file-input file-input-bordered file-input-md w-full bg-base-100 @error('image') input-error @enderror" />
                     @error('image')
                         <p class="text-error text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
         </section>
-
-        @include('admin.partials.category-extended-fields', ['category' => $category, 'dealerGroups' => $dealerGroups])
 
         {{-- Durum --}}
         <section class="admin-form-section">
@@ -133,7 +131,6 @@
                 </div>
             </div>
             <input type="hidden" name="sort_order" value="{{ old('sort_order', $category->sort_order) }}" />
-            <input type="hidden" name="display_priority" value="{{ old('display_priority', $category->display_priority) }}" />
             <div class="form-control">
                 <label class="label cursor-pointer justify-start gap-3">
                     <input type="checkbox" name="is_active" value="1" class="checkbox checkbox-primary"
@@ -141,7 +138,6 @@
                     <span class="label-text font-medium">Aktif</span>
                 </label>
             </div>
-            @include('admin.partials.category-advanced-fields', ['category' => $category])
         </section>
 
         {{-- İşlemler --}}

@@ -79,11 +79,9 @@ php artisan serve
 
 ### Kategoriler Modülü
 11. **Kategoriler CRUD** — Hiyerarşik (parent_id), slug, sıra, aktif/pasif
-12. **Sezon & erişim** — Sezon başlangıç/bitiş ayı, sezon dışı pasif, bayi gruplarına görünürlük, parti başına kota
-13. **Ürün nitelikleri** — Zorunlu/görünür nitelikler (config'den), bölge kısıtı (şehir/bölge tag input)
-14. **Gelişmiş ayarlar** — Hasat süresi, ideal iklim (sıcaklık/nem), zorunlu belgeler, MoQ, kâr marjı, renk, ikon, rozetler
-15. **Kategori görselleri** — `storage/app/public/categories/` altında yükleme
-16. **Dealer groups** — Bayi grupları tablosu, kategori görünürlük kısıtı
+12. **Kategori görselleri** — `storage/app/public/categories/` altında yükleme
+13. Kategori her zaman açık; panelde pasife alırsa görünmez. Bölge/sezon kısıtı yok.
 
 ### Ürünler Modülü
-17. **Ürünler CRUD** — Kategori, SKU, fiyat, birim, stok, min sipariş, filtreleme
+14. **Ürünler CRUD** — Kategori, SKU, fiyat, birim, stok, min sipariş, filtreleme
+15. Ürün her zaman açık; panelde pasife alırsa görünmez.
