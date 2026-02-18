@@ -2,6 +2,8 @@
 
 Laravel 12 tabanlı B2B çiçek satış platformu. Admin paneli ve bayi girişi.
 
+> Projenin genel durumu, tamamlanan modüller ve eksikler için [PROJECT_STATUS.md](PROJECT_STATUS.md) dosyasına bakın. Detaylı teknik dokümantasyon `docs/` klasöründe.
+
 ## Kurulum
 
 ### 1. Bağımlılıklar
@@ -57,3 +59,5 @@ Tarayıcıda: http://localhost:8000
 | ----- | -------------- | ------ | -------------- |
 | Admin | admin@sera.com | 123456 | /yonetim/giris |
 | Bayi  | bayi@test.com  | 123456 | /giris         |
+
+**Admin panel (Türkçe, SEO uyumlu):** `/yonetim/kategoriler`, `/yonetim/kategoriler/{slug}/duzenle`, `/yonetim/urunler`, `/yonetim/urunler/{slug}/duzenle`

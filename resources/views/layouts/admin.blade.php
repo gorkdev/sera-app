@@ -23,7 +23,7 @@
 
             {{-- Brand --}}
             <div class="flex-1">
-                <a href="{{ route('dashboard') }}" class="btn btn-ghost font-semibold text-lg">
+                <a href="{{ route('admin.dashboard') }}" class="btn btn-ghost font-semibold text-lg">
                     <span class="text-primary">Sera</span>
                     <span class="hidden sm:inline text-base-content/70">Yönetim</span>
                 </a>
@@ -67,26 +67,70 @@
         {{-- Sidebar --}}
         <div class="drawer-side">
             <label for="admin-drawer" class="drawer-overlay" aria-label="Menüyü kapat"></label>
-            <aside class="bg-base-100 border-r border-base-300 w-64 min-h-full">
-                <ul class="menu p-4 gap-1 font-medium">
-                    <li class="menu-title text-base-content/60 text-xs uppercase tracking-wider">Yönetim</li>
-                    <li><a href="{{ route('dashboard') }}" class="rounded-lg">Dashboard</a></li>
-                    <li class="menu-title text-base-content/60 text-xs uppercase tracking-wider mt-4">İçerik</li>
-                    <li><a href="#" class="rounded-lg">Kategoriler</a></li>
-                    <li><a href="#" class="rounded-lg">Ürünler</a></li>
-                    <li><a href="#" class="rounded-lg">Bannerlar</a></li>
-                    <li><a href="#" class="rounded-lg">Menüler</a></li>
-                    <li class="menu-title text-base-content/60 text-xs uppercase tracking-wider mt-4">Satış</li>
-                    <li><a href="#" class="rounded-lg">Partiler</a></li>
-                    <li><a href="#" class="rounded-lg">Stoklar</a></li>
-                    <li><a href="#" class="rounded-lg">Siparişler</a></li>
-                    <li class="menu-title text-base-content/60 text-xs uppercase tracking-wider mt-4">Bayiler</li>
-                    <li><a href="#" class="rounded-lg">Bayi Listesi</a></li>
-                    <li><a href="#" class="rounded-lg">Gruplar</a></li>
-                    <li class="menu-title text-base-content/60 text-xs uppercase tracking-wider mt-4">Sistem</li>
-                    <li><a href="#" class="rounded-lg">Yöneticiler</a></li>
-                    <li><a href="#" class="rounded-lg">Ayarlar</a></li>
-                </ul>
+            <aside class="bg-base-100 border-r border-base-300 w-64 min-h-full flex flex-col">
+                <nav class="admin-sidebar flex-1 overflow-y-auto py-4">
+                    <ul class="menu px-3 gap-1 w-full">
+                        <li class="menu-title px-3 py-2 text-base-content/50 text-xs font-semibold uppercase tracking-wider">Yönetim</li>
+                        <li>
+                            <a href="{{ route('admin.dashboard') }}" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 {{ request()->routeIs('admin.dashboard') ? 'active bg-primary/10 text-primary' : '' }}">
+                                @svg('heroicon-o-squares-2x2', 'h-5 w-5 shrink-0 opacity-70')
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="menu-title px-3 py-2 mt-4 text-base-content/50 text-xs font-semibold uppercase tracking-wider">İçerik</li>
+                        <li>
+                            <a href="{{ route('admin.categories.index') }}" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 {{ request()->routeIs('admin.categories.*') ? 'active bg-primary/10 text-primary' : '' }}">
+                                @svg('heroicon-o-folder', 'h-5 w-5 shrink-0 opacity-70')
+                                <span>Kategoriler</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('admin.products.index') }}" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 {{ request()->routeIs('admin.products.*') ? 'active bg-primary/10 text-primary' : '' }}">
+                                @svg('heroicon-o-cube', 'h-5 w-5 shrink-0 opacity-70')
+                                <span>Ürünler</span>
+                            </a>
+                        </li>
+                        <li><a href="#" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 opacity-60">
+                            @svg('heroicon-o-photo', 'h-5 w-5 shrink-0')
+                            <span>Bannerlar</span>
+                        </a></li>
+                        <li><a href="#" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 opacity-60">
+                            @svg('heroicon-o-bars-3', 'h-5 w-5 shrink-0')
+                            <span>Menüler</span>
+                        </a></li>
+                        <li class="menu-title px-3 py-2 mt-4 text-base-content/50 text-xs font-semibold uppercase tracking-wider">Satış</li>
+                        <li><a href="#" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 opacity-60">
+                            @svg('heroicon-o-calendar-days', 'h-5 w-5 shrink-0')
+                            <span>Partiler</span>
+                        </a></li>
+                        <li><a href="#" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 opacity-60">
+                            @svg('heroicon-o-square-3-stack-3d', 'h-5 w-5 shrink-0')
+                            <span>Stoklar</span>
+                        </a></li>
+                        <li><a href="#" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 opacity-60">
+                            @svg('heroicon-o-shopping-cart', 'h-5 w-5 shrink-0')
+                            <span>Siparişler</span>
+                        </a></li>
+                        <li class="menu-title px-3 py-2 mt-4 text-base-content/50 text-xs font-semibold uppercase tracking-wider">Bayiler</li>
+                        <li><a href="#" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 opacity-60">
+                            @svg('heroicon-o-users', 'h-5 w-5 shrink-0')
+                            <span>Bayi Listesi</span>
+                        </a></li>
+                        <li><a href="#" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 opacity-60">
+                            @svg('heroicon-o-user-group', 'h-5 w-5 shrink-0')
+                            <span>Gruplar</span>
+                        </a></li>
+                        <li class="menu-title px-3 py-2 mt-4 text-base-content/50 text-xs font-semibold uppercase tracking-wider">Sistem</li>
+                        <li><a href="#" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 opacity-60">
+                            @svg('heroicon-o-shield-check', 'h-5 w-5 shrink-0')
+                            <span>Yöneticiler</span>
+                        </a></li>
+                        <li><a href="#" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 opacity-60">
+                            @svg('heroicon-o-cog-6-tooth', 'h-5 w-5 shrink-0')
+                            <span>Ayarlar</span>
+                        </a></li>
+                    </ul>
+                </nav>
             </aside>
         </div>
     </div>

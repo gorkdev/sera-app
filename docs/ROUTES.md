@@ -18,6 +18,18 @@ URL yapısı ve route referansı.
 | POST | `/yonetim/cikis` | admin.logout | Admin çıkış |
 | GET | `/panel` | panel | Bayi paneli (dealer.auth) |
 | GET | `/yonetim` | dashboard | Admin dashboard (admin.auth) |
+| GET | `/yonetim/kategoriler` | admin.categories.index | Kategori listesi |
+| GET | `/yonetim/kategoriler/olustur` | admin.categories.create | Kategori oluştur |
+| POST | `/yonetim/kategoriler` | admin.categories.store | Kategori kaydet |
+| GET | `/yonetim/kategoriler/{slug}/duzenle` | admin.categories.edit | Kategori düzenle |
+| PUT | `/yonetim/kategoriler/{slug}` | admin.categories.update | Kategori güncelle |
+| DELETE | `/yonetim/kategoriler/{slug}` | admin.categories.destroy | Kategori sil |
+| GET | `/yonetim/urunler` | admin.products.index | Ürün listesi |
+| GET | `/yonetim/urunler/olustur` | admin.products.create | Ürün oluştur |
+| POST | `/yonetim/urunler` | admin.products.store | Ürün kaydet |
+| GET | `/yonetim/urunler/{slug}/duzenle` | admin.products.edit | Ürün düzenle |
+| PUT | `/yonetim/urunler/{slug}` | admin.products.update | Ürün güncelle |
+| DELETE | `/yonetim/urunler/{slug}` | admin.products.destroy | Ürün sil |
 
 ---
 
@@ -36,9 +48,21 @@ URL yapısı ve route referansı.
 
 ### admin.php (Prefix: /yonetim)
 
-| Route | Middleware | Açıklama |
-|-------|------------|----------|
-| `GET /` | admin.auth | Dashboard (placeholder metin) |
+| Route | Middleware | Controller | Açıklama |
+|-------|------------|------------|----------|
+| `GET /` | admin.auth | Closure | Dashboard |
+| `GET /kategoriler` | admin.auth | CategoryController@index | Kategori listesi |
+| `GET /kategoriler/olustur` | admin.auth | CategoryController@create | Kategori oluştur formu |
+| `POST /kategoriler` | admin.auth | CategoryController@store | Kategori kaydet |
+| `GET /kategoriler/{slug}/duzenle` | admin.auth | CategoryController@edit | Kategori düzenle formu |
+| `PUT /kategoriler/{slug}` | admin.auth | CategoryController@update | Kategori güncelle |
+| `DELETE /kategoriler/{slug}` | admin.auth | CategoryController@destroy | Kategori sil |
+| `GET /urunler` | admin.auth | ProductController@index | Ürün listesi |
+| `GET /urunler/olustur` | admin.auth | ProductController@create | Ürün oluştur formu |
+| `POST /urunler` | admin.auth | ProductController@store | Ürün kaydet |
+| `GET /urunler/{slug}/duzenle` | admin.auth | ProductController@edit | Ürün düzenle formu |
+| `PUT /urunler/{slug}` | admin.auth | ProductController@update | Ürün güncelle |
+| `DELETE /urunler/{slug}` | admin.auth | ProductController@destroy | Ürün sil |
 
 ### dealer.php
 
@@ -51,12 +75,18 @@ URL yapısı ve route referansı.
 ## Route İsimleri
 
 ```php
-route('home')               // /
-route('dealer.login')        // /giris
+route('home')                    // /
+route('dealer.login')            // /giris
 route('dealer.register.submit')  // POST /kayit
-route('admin.login')        // /yonetim/giris
-route('panel')              // /panel
-route('dashboard')          // /yonetim (admin içinde)
+route('admin.login')             // /yonetim/giris
+route('panel')                   // /panel
+route('dashboard')               // /yonetim
+route('admin.categories.index')  // /yonetim/kategoriler
+route('admin.categories.create') // /yonetim/kategoriler/olustur
+route('admin.categories.edit', $category)   // /yonetim/kategoriler/{slug}/duzenle
+route('admin.products.index')    // /yonetim/urunler
+route('admin.products.create')   // /yonetim/urunler/olustur
+route('admin.products.edit', $product)      // /yonetim/urunler/{slug}/duzenle
 ```
 
 ---

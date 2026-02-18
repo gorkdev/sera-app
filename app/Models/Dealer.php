@@ -1,11 +1,11 @@
 <?php
-// Dealer.php
+
 namespace App\Models;
 
-
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\SoftDeletes; // Veri silinmesin, işaretlensin
 
 class Dealer extends Authenticatable
 {
@@ -14,13 +14,19 @@ class Dealer extends Authenticatable
     protected $table = 'dealers';
 
     protected $fillable = [
+        'dealer_group_id',
         'company_name',
         'contact_name',
         'email',
         'password',
         'phone',
-        'status', // pending, active, passive
+        'status',
     ];
+
+    public function group(): BelongsTo
+    {
+        return $this->belongsTo(DealerGroup::class, 'dealer_group_id');
+    }
 
     protected $hidden = [
         'password',
