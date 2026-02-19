@@ -29,8 +29,16 @@ Modeller, migrations ve seeders.
 | contact_name | string | Yetkili kişi |
 | email | string (unique) | E-posta |
 | password | string | Hash'lenmiş şifre |
-| phone | string (nullable) | Telefon |
-| status | enum | pending, active, passive |
+| phone | string (nullable) | Telefon (TR GSM, 11 hane, 05xx) |
+| tax_office | string (nullable) | Vergi dairesi |
+| tax_number | string (nullable) | Vergi no veya TCKN (10/11 hane) |
+| tax_type | enum (nullable) | 'tax' (10 haneli vergi no) veya 'tckn' (11 haneli) |
+| city | string (nullable) | İl (TR, büyük harf) |
+| district | string (nullable) | İlçe (TR, büyük harf) |
+| address | text (nullable) | Açık adres |
+| kvkk_consent | boolean | KVKK aydınlatma onayı |
+| email_verified_at | timestamp (nullable) | E-posta doğrulama tarihi |
+| status | enum | pending, active, passive, blocked |
 | remember_token | string | |
 | timestamps | | |
 | deleted_at | timestamp | Soft delete |
@@ -79,6 +87,20 @@ Modeller, migrations ve seeders.
 | is_active | boolean | Aktif mi |
 | timestamps | | |
 
+### `dealer_email_verifications`
+
+| Alan | Tip | Açıklama |
+|------|-----|----------|
+| id | bigint | PK |
+| dealer_id | bigint (FK) | İlgili bayi |
+| code_hash | string | 6 haneli kodun HMAC-SHA256 hash'i |
+| expires_at | timestamp | Kodun geçerlilik bitişi |
+| last_sent_at | timestamp (nullable) | Son gönderim zamanı |
+| send_count | unsigned int | Kaç kere kod gönderildi |
+| attempts | unsigned int | Doğrulama deneme sayısı |
+| verified_at | timestamp (nullable) | Kod başarıyla doğrulandığında doldurulur |
+| created_at / updated_at | timestamps | |
+
 ### Standart Laravel Tabloları
 
 - `users` — Standart kullanıcı (minimal kullanım)
@@ -103,7 +125,7 @@ Modeller, migrations ve seeders.
 - **Auth:** Authenticatable, Notifiable
 - **Trait:** SoftDeletes
 - **İlişki:** belongsTo(DealerGroup)
-- **Fillable:** dealer_group_id, company_name, contact_name, email, password, phone, status
+- **Fillable (özet):** dealer_group_id, company_name, contact_name, email, password, phone, tax_office, tax_number, tax_type, city, district, address, kvkk_consent, email_verified_at, status
 
 ### DealerGroup
 

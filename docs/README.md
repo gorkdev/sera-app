@@ -75,10 +75,12 @@ php artisan serve
 
 ### Auth
 
-7. **Auth formları** — Admin ve Bayi giriş, Bayi kayıt (flip kart)
-8. **Form validasyonu** — Client-side (login-form.js, register-form.js)
-9. **Şifremi unuttum** — DaisyUI modal (tasarım amaçlı)
-10. **Heroicons** — blade-ui-kit/blade-heroicons ile ikon kullanımı
+7. **Auth formları** — Admin ve Bayi giriş, Bayi kayıt (artık ayrı sayfalar; solda görsel, sağda form layout)
+8. **Form validasyonu** — Client-side (login-form.js, register-form.js) + Livewire tarafında server-side doğrulama
+9. **Bayi kayıt akışı** — Livewire ile sayfa yenilenmeden kayıt, TR telefon formatı, il/ilçe doğrulaması, KVKK onayı, vergi no/TCKN otomatik algılama
+10. **Bayi email doğrulama** — 6 haneli kod, TTL, tekrar gönderme (rate limited), deneme limiti, maskeleme, detaylı hata mesajları
+11. **Şifremi unuttum** — DaisyUI modal (tasarım amaçlı)
+12. **Heroicons** — blade-ui-kit/blade-heroicons ile ikon kullanımı
 
 ### Kategoriler Modülü
 
@@ -90,3 +92,7 @@ php artisan serve
 
 14. **Ürünler CRUD** — Kategori, SKU, fiyat, birim, stok, min sipariş, filtreleme
 15. Ürün her zaman açık; panelde pasife alırsa görünmez.
+
+### Testler
+
+16. **Feature testler** — Bayi kayıt + email doğrulama + login akışları (tüm kritik durumlar), Admin login, Admin kategori/ürün oluşturma için uçtan uca testler.

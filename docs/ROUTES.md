@@ -9,9 +9,13 @@ URL yapısı ve route referansı.
 | Method | URL | Ad | Açıklama |
 |--------|-----|-----|----------|
 | GET | `/` | home | Anasayfa |
-| GET | `/giris` | dealer.login | Bayi giriş + kayıt sayfası |
+| GET | `/giris` | dealer.login | Bayi giriş sayfası |
 | POST | `/giris` | dealer.login.submit | Bayi giriş işlemi |
+| GET | `/kayit` | dealer.register | Bayi kayıt sayfası |
 | POST | `/kayit` | dealer.register.submit | Bayi kayıt işlemi |
+| GET | `/kayit/dogrula` | dealer.verify.show | Bayi email doğrulama sayfası (kod girişi) |
+| POST | `/kayit/dogrula` | dealer.verify.submit | Bayi email doğrulama form submit |
+| POST | `/kayit/dogrula/tekrar-gonder` | dealer.verify.resend | Doğrulama kodunu tekrar gönder (JSON/redirect) |
 | POST | `/cikis` | dealer.logout | Bayi çıkış |
 | GET | `/yonetim/giris` | admin.login | Admin giriş sayfası |
 | POST | `/yonetim/giris` | admin.login.submit | Admin giriş işlemi |
@@ -40,9 +44,13 @@ URL yapısı ve route referansı.
 | Route | Controller | View |
 |-------|------------|------|
 | `GET /` | Closure | home |
-| `GET /giris` | Dealer\AuthController@showAuth | auth.dealer.auth |
+| `GET /giris` | Dealer\AuthController@showLoginForm | auth.dealer.login |
 | `POST /giris` | Dealer\AuthController@login | - |
-| `POST /kayit` | Dealer\AuthController@register | redirect dealer.login |
+| `GET /kayit` | Dealer\AuthController@showRegisterForm | auth.dealer.register (Livewire içerir) |
+| `POST /kayit` | Dealer\AuthController@register | redirect dealer.verify.show |
+| `GET /kayit/dogrula` | Dealer\EmailVerificationController@show | auth.dealer.verify |
+| `POST /kayit/dogrula` | Dealer\EmailVerificationController@verify | redirect dealer.login |
+| `POST /kayit/dogrula/tekrar-gonder` | Dealer\EmailVerificationController@resend | JSON veya redirect |
 | `GET /yonetim/giris` | Admin\AuthController@showLoginForm | auth.admin.login |
 | `POST /yonetim/giris` | Admin\AuthController@login | - |
 
@@ -76,8 +84,13 @@ URL yapısı ve route referansı.
 
 ```php
 route('home')                    // /
-route('dealer.login')            // /giris
+route('dealer.login')            // GET /giris
+route('dealer.login.submit')     // POST /giris
+route('dealer.register')         // GET /kayit
 route('dealer.register.submit')  // POST /kayit
+route('dealer.verify.show')      // GET /kayit/dogrula
+route('dealer.verify.submit')    // POST /kayit/dogrula
+route('dealer.verify.resend')    // POST /kayit/dogrula/tekrar-gonder
 route('admin.login')             // /yonetim/giris
 route('panel')                   // /panel
 route('dashboard')               // /yonetim

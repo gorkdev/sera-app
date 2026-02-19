@@ -16,10 +16,15 @@ B2B toptan çiçek satış platformu. Bu dosya projenin genel durumunu özetler.
 ## Mevcut Durum
 
 ### Tamamlanan Modüller
-- **Auth** — Admin ve Bayi giriş/kayıt, çoklu guard
+- **Auth** — Admin ve Bayi giriş/kayıt, çoklu guard, email doğrulama, admin onay akışı
+- **Bayi kayıt akışı** — Livewire tabanlı form (sayfa yenilenmeden), TR telefon formatı, il/ilçe doğrulaması, KVKK onayı, vergi no/TCKN otomatik algılama
+- **Bayi email doğrulama** — 6 haneli kod, süre (TTL), tekrar gönderme, deneme sayısı limiti, rate limiting, maskeleme, detaylı hata mesajları
 - **Admin panel** — Dashboard, Kategoriler, Ürünler (CRUD)
 - **Kategoriler** — Hiyerarşik yapı, görsel, aktif/pasif (her zaman açık; panelde pasife alırsa görünmez)
 - **Ürünler** — Kategori, SKU, fiyat, birim, stok, min sipariş (her zaman açık; panelde pasife alırsa görünmez)
+
+### Testler
+- **Feature testler** — Bayi kayıt + email doğrulama + login akışları (tüm kritik durumlar), Admin login, Admin kategori/ürün oluşturma uçtan uca test ediliyor.
 
 ### Henüz Tamamlanmamış
 - Bayi katalog (ürün listesi)

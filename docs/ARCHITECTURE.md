@@ -35,7 +35,7 @@ auth()->guard('dealer')->user();
 | Alias | Sınıf | Görevi |
 |-------|-------|--------|
 | `admin.auth` | EnsureAdminAuthenticated | Admin giriş yoksa `admin.login`'e yönlendirir |
-| `dealer.auth` | EnsureDealerAuthenticated | Bayi giriş kontrolü (şu an passthrough) |
+| `dealer.auth` | EnsureDealerAuthenticated | Bayi giriş kontrolü (panel erişimi) |
 
 ### Kayıt Yeri
 
@@ -43,7 +43,7 @@ auth()->guard('dealer')->user();
 
 ### Henüz Eklenmemiş (Spec'te Planlanan)
 
-- `dealer.approved` — Email doğrulama + status kontrolü
+- `dealer.approved` — Email doğrulama + status kontrolü (şu anda login içinde yapılmakta)
 - `dealer.group.time` — Grup bazlı stok erişim zamanlaması
 - `party.active` — Aktif parti var mı kontrolü
 
@@ -71,11 +71,12 @@ auth()->guard('dealer')->user();
 
 ```
 app/Http/Controllers/
-├── Controller.php          # Base
+├── Controller.php                    # Base
 ├── Admin/
-│   └── AuthController.php  # showLoginForm, login, logout
+│   └── AuthController.php            # showLoginForm, login, logout
 ├── Dealer/
-│   ├── AuthController.php  # showAuth, login, register, logout
+│   ├── AuthController.php            # showLoginForm, showRegisterForm, login, register, logout
+│   ├── EmailVerificationController.php # Email doğrulama akışı (show/verify/resend)
 │   └── DealerController.php
 ```
 
@@ -87,7 +88,17 @@ app/Http/Controllers/
 
 ### Dealer\AuthController
 
-- **showAuth()** — `auth.dealer.auth` view (giriş + kayıt flip kart)
-- **login()** — Validasyon, attempt, status kontrolü (pending/active/passive)
-- **register()** — Dealer kayıt, success flash mesajı
+- **showLoginForm()** — `auth.dealer.login` view (eğer zaten giriş yapmışsa `panel`'e redirect)
+- **showRegisterForm()** — `auth.dealer.register` view (Livewire kayıt formunu içerir)
+- **login()** — Validasyon, attempt, email doğrulama ve status (pending/active/passive/blocked) kontrolü:
+  - Email doğrulanmamışsa → logout + session'da `dealer_verification_id` ve `needs_email_verification` flash'ı,
+  - Email doğrulanmış ama `status !== active` ise → uygun flash mesajı (`admin_pending`, `dealer_passive`, `dealer_blocked`),
+  - Email doğrulanmış ve `status = active` ise → `panel`'e redirect.
+- **register()** — Validasyon, Dealer oluşturma, `dealer_verification_id` session'a yazma, `DealerEmailVerificationService` ile kod gönderme ve `dealer.verify.show` sayfasına redirect.
 - **logout()** — dealer.login'e yönlendirme
+
+### Dealer\EmailVerificationController
+
+- **show()** — Session'daki `dealer_verification_id` üzerinden bayi bulur; email zaten doğrulanmışsa login sayfasına success mesajıyla döner, aksi halde maskeli email ve kalan cooldown ile verify sayfasını render eder.
+- **verify()** — RateLimiter ile deneme limiti + kod format validasyonu + `DealerEmailVerificationService::verify` çağrısı; başarılıysa bayi `email_verified_at` doldurulur, session'dan `dealer_verification_id` silinir ve login sayfasına success mesajıyla redirect edilir.
+- **resend()** — Rate limiting kurallarına göre yeni kod üretip gönderir, JSON veya redirect ile kullanıcıya cooldown bilgisini döner.

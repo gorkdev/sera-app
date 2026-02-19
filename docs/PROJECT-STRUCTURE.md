@@ -17,8 +17,9 @@ sera-app/
 │   │   │   │   ├── CategoryController.php  # Kategoriler CRUD
 │   │   │   │   └── ProductController.php    # Ürünler CRUD
 │   │   │   └── Dealer/
-│   │   │       ├── AuthController.php  # Bayi giriş/çıkış
-│   │   │       └── DealerController.php # Bayi panel controller
+│   │   │       ├── AuthController.php            # Bayi giriş/kayıt + login akışı
+│   │   │       ├── EmailVerificationController.php # Bayi email doğrulama akışı
+│   │   │       └── DealerController.php          # Bayi panel controller
 │   │   └── Middleware/
 │   │       ├── EnsureAdminAuthenticated.php
 │   │       └── EnsureDealerAuthenticated.php
@@ -59,7 +60,9 @@ sera-app/
 │   │   ├── DealerGroupSeeder.php
 │   │   └── DealerSeeder.php
 │   └── factories/
-│       └── UserFactory.php
+│       ├── UserFactory.php
+│       ├── AdminUserFactory.php
+│       └── DealerGroupFactory.php
 │
 ├── docs/                                # Bu dokümantasyon
 │   ├── README.md
@@ -83,16 +86,23 @@ sera-app/
 │   │   └── app.css                      # Tailwind + DaisyUI giriş noktası
 │   ├── js/
 │   │   ├── app.js
-│   │   └── bootstrap.js                 # Axios config
+│   │   ├── bootstrap.js                 # Axios config
+│   │   ├── login-form.js               # Giriş formu yardımcıları
+│   │   ├── register-form.js            # Bayi kayıt UX yardımcıları (Livewire ile birlikte)
+│   │   └── dealer-email-verify.js      # Email doğrulama sayfası için JS
 │   └── views/
 │       ├── layouts/
-│       │   ├── app.blade.php            # Public layout
-│       │   ├── admin.blade.php          # Admin panel layout
-│       │   └── dealer.blade.php         # Bayi panel layout
-│       ├── home.blade.php               # Anasayfa
+│       │   ├── app.blade.php                 # Public layout
+│       │   ├── admin.blade.php               # Admin panel layout
+│       │   └── dealer.blade.php              # Bayi panel layout
+│       ├── home.blade.php                    # Anasayfa
 │       ├── auth/
-│       │   ├── admin/login.blade.php    # Admin giriş formu
-│       │   └── dealer/login.blade.php  # Bayi giriş formu
+│       │   ├── admin/login.blade.php         # Admin giriş formu (iki sütun layout)
+│       │   ├── dealer/login.blade.php        # Bayi giriş formu (iki sütun layout)
+│       │   ├── dealer/register.blade.php     # Bayi kayıt sayfası (Livewire wrapper)
+│       │   └── dealer/verify.blade.php       # Bayi email doğrulama sayfası
+│       ├── livewire/
+│       │   └── dealer/register-form.blade.php # Livewire bayi kayıt formu
 │       ├── admin/
 │       │   ├── dashboard.blade.php
 │       │   ├── categories/

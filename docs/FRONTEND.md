@@ -166,9 +166,8 @@ Detaylı bilgi için [Auth Formları](./AUTH-FORMS.md) dokümanına bakın.
 /* Ortak giriş kartı (admin + bayi aynı yapı) */
 .auth-card { padding: 1.5rem; } /* sm: 2rem */
 
-/* Auth flip kart (login/register) */
-.perspective-1000, .preserve-3d, .backface-hidden, .rotate-y-180
-.auth-flip-inner.flipped { transform: rotateY(180deg); }
+/* Auth sayfalarında iki sütunlu layout yardımcı sınıfları (örnek) */
+/* Sol: görsel alanı, Sağ: form kartı */
 
 /* Modal: sadece overlay fade, içerik animasyonsuz */
 #forgot_password_modal.modal .modal-box { transition: opacity 0.25s; }
@@ -179,7 +178,7 @@ Detaylı bilgi için [Auth Formları](./AUTH-FORMS.md) dokümanına bakın.
 | Dosya | Görevi |
 |-------|--------|
 | `login-form.js` | Giriş formu client-side validasyon |
-| `register-form.js` | Kayıt formu client-side validasyon |
-| `auth-flip.js` | Bayi giriş/kayıt flip kart tetikleyici |
+| `register-form.js` | Bayi kayıt formu için client-side UX helper'ları (Livewire ile birlikte) |
+| `dealer-email-verify.js` | Email doğrulama sayfasında 6 haneli kod girişi ve "Kodu tekrar gönder" akışı |
 
-`app.js` içinde DOMContentLoaded'da hepsi init edilir.
+`app.js` içinde DOMContentLoaded ve Livewire hook'ları ile init edilir.
