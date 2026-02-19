@@ -139,7 +139,13 @@ new class extends Component
                                 <span class="badge badge-ghost badge-sm">{{ $product->category->name }}</span>
                             </td>
                             <td class="hidden md:table-cell">
-                                <code class="text-xs bg-base-200 px-1.5 py-0.5 rounded">{{ $product->sku ?? '—' }}</code>
+                                @if ($product->sku)
+                                    <code class="text-xs bg-base-200 px-1.5 py-0.5 rounded cursor-pointer hover:bg-base-300 transition-colors" 
+                                          data-copy-text="{{ $product->sku }}" 
+                                          title="Kopyalamak için tıklayın">{{ $product->sku }}</code>
+                                @else
+                                    <code class="text-xs bg-base-200 px-1.5 py-0.5 rounded">—</code>
+                                @endif
                             </td>
                             <td class="font-medium tabular-nums">{{ $product->formatted_price }}</td>
                             <td class="text-center tabular-nums">{{ $product->stock_quantity }}</td>
@@ -148,9 +154,9 @@ new class extends Component
                             </td>
                             <td>
                                 @if($product->is_active)
-                                    <span class="badge badge-success badge-sm">Aktif</span>
+                                    <span class="badge badge-success badge-sm text-success-content">Aktif</span>
                                 @else
-                                    <span class="badge badge-ghost badge-sm">Pasif</span>
+                                    <span class="badge badge-error badge-sm text-error-content">Pasif</span>
                                 @endif
                             </td>
                             <td class="text-right">

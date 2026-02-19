@@ -48,7 +48,7 @@
             <div role="tabpanel" class="tab-content py-4">
                 <section class="admin-form-section">
                     <h2
-                        class="text-sm font-semibold uppercase tracking-wider text-base-content/70 mb-4 flex items-center gap-2">
+                        class="text-sm font-semibold uppercase tracking-wider text-base-content/70 my-4 flex items-center gap-2">
                         @svg('heroicon-o-document-text', 'h-4 w-4')
                         Temel Bilgiler
                     </h2>

@@ -21,12 +21,13 @@
         </div>
     </div>
 
-    <form method="POST" action="{{ route('admin.categories.store') }}" class="admin-form space-y-6 max-w-3xl" enctype="multipart/form-data">
+    <form method="POST" action="{{ route('admin.categories.store') }}" class="admin-form space-y-6 max-w-3xl"
+        enctype="multipart/form-data">
         @csrf
 
         {{-- Temel Bilgiler --}}
         <section class="admin-form-section">
-            <h2 class="text-sm font-semibold uppercase tracking-wider text-base-content/70 mb-4 flex items-center gap-2">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-base-content/70 my-4 flex items-center gap-2">
                 @svg('heroicon-o-document-text', 'h-4 w-4')
                 Temel Bilgiler
             </h2>
@@ -34,7 +35,9 @@
                 @svg('heroicon-o-information-circle', 'h-5 w-5 shrink-0')
                 <div>
                     <p class="font-medium">Ne doldurmalıyım?</p>
-                    <p class="text-sm opacity-90">Üst kategori: Alt kategori ekliyorsanız ana seçin. Örn: "Güller" için "Kesme Çiçekler". Ad: Katalogda görünecek isim. Örn: "Kesme Çiçekler". Slug: Adres çubuğu. Örn: kesme-cicekler. Açıklama: Kısa bilgi. Görsel: Kategori kartı resmi.</p>
+                    <p class="text-sm opacity-90">Üst kategori: Alt kategori ekliyorsanız ana seçin. Örn: "Güller" için
+                        "Kesme Çiçekler". Ad: Katalogda görünecek isim. Örn: "Kesme Çiçekler". Slug: Adres çubuğu. Örn:
+                        kesme-cicekler. Açıklama: Kısa bilgi. Görsel: Kategori kartı resmi.</p>
                 </div>
             </div>
             <div class="space-y-4">

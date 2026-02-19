@@ -22,13 +22,14 @@
         </div>
     </div>
 
-    <form method="POST" action="{{ route('admin.categories.update', $category) }}" class="admin-form space-y-6 max-w-3xl" enctype="multipart/form-data">
+    <form method="POST" action="{{ route('admin.categories.update', $category) }}" class="admin-form space-y-6 max-w-3xl"
+        enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
         {{-- Temel Bilgiler --}}
         <section class="admin-form-section">
-            <h2 class="text-sm font-semibold uppercase tracking-wider text-base-content/70 mb-4 flex items-center gap-2">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-base-content/70 my-4 flex items-center gap-2">
                 @svg('heroicon-o-document-text', 'h-4 w-4')
                 Temel Bilgiler
             </h2>
@@ -36,7 +37,9 @@
                 @svg('heroicon-o-information-circle', 'h-5 w-5 shrink-0')
                 <div>
                     <p class="font-medium">Ne doldurmalıyım?</p>
-                    <p class="text-sm opacity-90">Üst kategori: Alt kategori ise ana seçin. Örn: "Güller" için "Kesme Çiçekler". Ad: Katalogda görünecek isim. Slug: Adres çubuğu. Örn: "kesme-cicekler". Açıklama: Kısa bilgi. Görsel: Kategori kartı resmi.</p>
+                    <p class="text-sm opacity-90">Üst kategori: Alt kategori ise ana seçin. Örn: "Güller" için "Kesme
+                        Çiçekler". Ad: Katalogda görünecek isim. Slug: Adres çubuğu. Örn: "kesme-cicekler". Açıklama: Kısa
+                        bilgi. Görsel: Kategori kartı resmi.</p>
                 </div>
             </div>
             <div class="space-y-4">
@@ -99,9 +102,10 @@
                         <span class="label-text font-medium">Görsel</span>
                         <span class="label-text-alt">Max 2MB, JPG/PNG</span>
                     </label>
-                    @if($category->image)
+                    @if ($category->image)
                         <div class="flex items-center gap-4 mb-2">
-                            <img src="{{ Storage::url($category->image) }}" alt="" class="h-16 w-16 object-cover rounded-lg border border-base-300" />
+                            <img src="{{ Storage::url($category->image) }}" alt=""
+                                class="h-16 w-16 object-cover rounded-lg border border-base-300" />
                             <label class="flex items-center gap-2 cursor-pointer text-sm text-error">
                                 <input type="checkbox" name="remove_image" value="1" class="checkbox checkbox-sm" />
                                 Görseli kaldır

@@ -477,8 +477,8 @@ export function initRegisterForm(formSelector = "[data-register-form]") {
         apply();
     }
 
-    // Livewire formunda submit/field-error JS validasyonuna girmiyoruz (çakışmasın).
-    if (isLivewire) {
+    // Livewire formunda veya admin düzenleme formunda AJAX submit'e girmiyoruz (çakışmasın).
+    if (isLivewire || form.dataset.registerMode === "edit") {
         return;
     }
 

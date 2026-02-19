@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\DealerController;
 use App\Http\Controllers\Admin\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,4 +26,11 @@ Route::middleware(['admin.auth'])->name('admin.')->group(function () {
     Route::get('urunler/{product:slug}/duzenle', [ProductController::class, 'edit'])->name('products.edit');
     Route::put('urunler/{product:slug}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('urunler/{product:slug}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+    // Bayiler — /yonetim/bayiler
+    Route::get('bayiler', [DealerController::class, 'index'])->name('dealers.index');
+    Route::get('bayiler/{dealer}', [DealerController::class, 'edit'])->name('dealers.edit');
+    Route::put('bayiler/{dealer}', [DealerController::class, 'update'])->name('dealers.update');
+    Route::post('bayiler/{dealer}/onayla', [DealerController::class, 'approve'])->name('dealers.approve');
+    Route::post('bayiler/{dealer}/reddet', [DealerController::class, 'reject'])->name('dealers.reject');
 });

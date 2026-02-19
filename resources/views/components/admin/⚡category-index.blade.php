@@ -192,9 +192,9 @@ new class extends Component
                             </td>
                             <td>
                                 @if ($category->is_active)
-                                    <span class="badge badge-success badge-sm">Aktif</span>
+                                    <span class="badge badge-success badge-sm text-success-content">Aktif</span>
                                 @else
-                                    <span class="badge badge-ghost badge-sm">Pasif</span>
+                                    <span class="badge badge-error badge-sm text-error-content">Pasif</span>
                                 @endif
                             </td>
                             <td class="text-right">

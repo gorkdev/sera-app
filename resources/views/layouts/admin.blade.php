@@ -49,7 +49,7 @@
             {{-- Page content --}}
             <main class="flex-1 p-4 lg:p-6">
                 @if(session('success'))
-                    <div role="alert" class="alert alert-success mb-4 shadow-sm">
+                    <div role="alert" class="alert alert-success mb-4 shadow-sm" id="flash-success">
                         @svg('heroicon-s-check-circle', 'h-5 w-5 shrink-0')
                         <span>{{ session('success') }}</span>
                     </div>
@@ -113,10 +113,13 @@
                             <span>Siparişler</span>
                         </a></li>
                         <li class="menu-title px-3 py-2 mt-4 text-base-content/50 text-xs font-semibold uppercase tracking-wider">Bayiler</li>
-                        <li><a href="#" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 opacity-60">
-                            @svg('heroicon-o-users', 'h-5 w-5 shrink-0')
-                            <span>Bayi Listesi</span>
-                        </a></li>
+                        <li>
+                            <a href="{{ route('admin.dealers.index') }}"
+                               class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 {{ request()->routeIs('admin.dealers.*') ? 'active bg-primary/10 text-primary' : '' }}">
+                                @svg('heroicon-o-users', 'h-5 w-5 shrink-0 opacity-70')
+                                <span>Bayi Listesi</span>
+                            </a>
+                        </li>
                         <li><a href="#" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 opacity-60">
                             @svg('heroicon-o-user-group', 'h-5 w-5 shrink-0')
                             <span>Gruplar</span>
@@ -151,6 +154,30 @@
                     <button class="btn btn-ghost">Vazgeç</button>
                     <button type="button" class="btn btn-error" id="confirm_delete_yes">
                         Evet, sil
+                    </button>
+                </form>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button aria-label="Kapat">close</button>
+        </form>
+    </dialog>
+
+    {{-- Global confirm modal (dealer approve / reject) --}}
+    <dialog id="confirm_dealer_status_modal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-semibold text-lg flex items-center gap-2">
+                @svg('heroicon-o-exclamation-triangle', 'h-5 w-5 text-warning')
+                <span id="confirm_dealer_status_title">Onay</span>
+            </h3>
+            <p class="py-4 text-base-content/70" id="confirm_dealer_status_message">
+                Bu işlemi yapmak istediğinize emin misiniz?
+            </p>
+            <div class="modal-action">
+                <form method="dialog" class="flex items-center gap-2">
+                    <button class="btn btn-ghost">Vazgeç</button>
+                    <button type="button" class="btn" id="confirm_dealer_status_yes" data-wire-method="" data-wire-params="">
+                        Evet
                     </button>
                 </form>
             </div>
