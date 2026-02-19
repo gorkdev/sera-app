@@ -8,6 +8,7 @@ use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -15,24 +16,8 @@ class ProductController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = Product::with('category');
-
-        if ($request->filled('category')) {
-            $query->where('category_id', $request->category);
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('sku', 'like', "%{$search}%");
-            });
-        }
-
-        $products = $query->orderBy('name')->paginate(15)->withQueryString();
-        $categories = Category::where('is_active', true)->orderBy('sort_order')->orderBy('name')->get();
-
-        return view('admin.products.index', compact('products', 'categories'));
+        // Livewire component render ediyor
+        return view('admin.products.index');
     }
 
     public function create(): View
@@ -55,7 +40,7 @@ class ProductController extends Controller
         $request->merge([
             'name' => trim((string) $request->input('name', '')),
             'slug' => trim((string) $request->input('slug', '')),
-            'sku' => trim((string) $request->input('sku', '')),
+            'sku' => Str::upper(trim((string) $request->input('sku', ''))),
             'description' => trim((string) $request->input('description', '')),
         ]);
 
@@ -157,7 +142,7 @@ class ProductController extends Controller
         $request->merge([
             'name' => trim((string) $request->input('name', '')),
             'slug' => trim((string) $request->input('slug', '')),
-            'sku' => trim((string) $request->input('sku', '')),
+            'sku' => Str::upper(trim((string) $request->input('sku', ''))),
             'description' => trim((string) $request->input('description', '')),
         ]);
 

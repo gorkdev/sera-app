@@ -7,19 +7,77 @@ use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class CategoryController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $categories = Category::with('parent')
-            ->withCount('products')
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get();
+        // Livewire component render ediyor
+        return view('admin.categories.index');
+    }
 
-        return view('admin.categories.index', compact('categories'));
+    public function reorder(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'distinct', 'exists:categories,id'],
+            'ust' => ['required', 'string'], // tumu | ana | {id}
+        ], [
+            'ids.required' => 'Sıralama verisi gerekli.',
+            'ids.array' => 'Sıralama verisi geçersiz.',
+        ]);
+
+        $ust = (string) $validated['ust'];
+        if ($ust === 'all') { // eski client desteği
+            $ust = 'tumu';
+        }
+        if ($ust === 'root') {
+            $ust = 'ana';
+        }
+
+        if ($ust === 'tumu') {
+            return response()->json(['message' => 'Tüm kategoriler görünümünde sıralama yapılamaz.'], 422);
+        }
+
+        $expectedParentId = null;
+        if ($ust !== 'ana') {
+            if (! ctype_digit($ust)) {
+                return response()->json(['message' => 'Üst kategori filtresi geçersiz.'], 422);
+            }
+            $expectedParentId = (int) $ust;
+        }
+
+        $ids = array_values($validated['ids']);
+
+        $cats = Category::query()
+            ->whereIn('id', $ids)
+            ->get(['id', 'parent_id']);
+
+        if ($cats->count() !== count($ids)) {
+            return response()->json(['message' => 'Bazı kategoriler bulunamadı.'], 422);
+        }
+
+        foreach ($cats as $c) {
+            if ($expectedParentId === null) {
+                if ($c->parent_id !== null) {
+                    return response()->json(['message' => 'Sadece ana kategoriler sıralanabilir.'], 422);
+                }
+            } else {
+                if ((int) $c->parent_id !== $expectedParentId) {
+                    return response()->json(['message' => 'Sadece seçili üst kategori altındaki kategoriler sıralanabilir.'], 422);
+                }
+            }
+        }
+
+        DB::transaction(function () use ($ids) {
+            foreach ($ids as $i => $id) {
+                Category::whereKey($id)->update(['sort_order' => $i]);
+            }
+        });
+
+        return response()->json(['ok' => true]);
     }
 
     public function create(): View

@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
     @stack('styles')
 </head>
 <body class="min-h-screen flex flex-col bg-base-200 antialiased">
@@ -135,6 +136,31 @@
         </div>
     </div>
 
+    {{-- Global confirm modal (delete) --}}
+    <dialog id="confirm_delete_modal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-semibold text-lg flex items-center gap-2">
+                @svg('heroicon-o-exclamation-triangle', 'h-5 w-5 text-warning')
+                <span id="confirm_delete_title">Silme Onayı</span>
+            </h3>
+            <p class="py-4 text-base-content/70" id="confirm_delete_message">
+                Bu öğeyi silmek istediğinize emin misiniz?
+            </p>
+            <div class="modal-action">
+                <form method="dialog" class="flex items-center gap-2">
+                    <button class="btn btn-ghost">Vazgeç</button>
+                    <button type="button" class="btn btn-error" id="confirm_delete_yes">
+                        Evet, sil
+                    </button>
+                </form>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button aria-label="Kapat">close</button>
+        </form>
+    </dialog>
+
+    @livewireScripts
     @stack('scripts')
 </body>
 </html>

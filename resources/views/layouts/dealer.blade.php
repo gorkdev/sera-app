@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
     @stack('styles')
 </head>
 <body class="min-h-screen flex flex-col bg-base-200 antialiased">
@@ -106,6 +107,7 @@
         </div>
     </footer>
 
+    @livewireScripts
     @stack('scripts')
 </body>
 </html>

@@ -11,6 +11,7 @@ Route::middleware(['admin.auth'])->name('admin.')->group(function () {
 
     // Kategoriler — /yonetim/kategoriler, /yonetim/kategoriler/olustur, /yonetim/kategoriler/{slug}/duzenle
     Route::get('kategoriler', [CategoryController::class, 'index'])->name('categories.index');
+    Route::post('kategoriler/sirala', [CategoryController::class, 'reorder'])->name('categories.reorder');
     Route::get('kategoriler/olustur', [CategoryController::class, 'create'])->name('categories.create');
     Route::post('kategoriler', [CategoryController::class, 'store'])->name('categories.store');
     Route::get('kategoriler/{category:slug}/duzenle', [CategoryController::class, 'edit'])->name('categories.edit');

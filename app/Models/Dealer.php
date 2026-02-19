@@ -20,6 +20,13 @@ class Dealer extends Authenticatable
         'email',
         'password',
         'phone',
+        'tax_office',
+        'tax_number',
+        'tax_type',
+        'city',
+        'district',
+        'address',
+        'kvkk_consent',
         'status',
     ];
 
@@ -31,5 +38,10 @@ class Dealer extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    protected $casts = [
+        'kvkk_consent' => 'boolean',
+        'email_verified_at' => 'datetime',
     ];
 }
