@@ -52,10 +52,10 @@
             </div>
 
             <div class="flex flex-col gap-2">
-                <label for="tax_number" class="label py-0 font-medium">Vergi No / TCKN</label>
+                <label for="tax_number" class="label py-0 font-medium">Vergi No</label>
                 <input type="text" id="tax_number" name="tax_number" wire:model.defer="tax_number"
                     class="input input-bordered w-full @error('tax_number') input-error @enderror"
-                    placeholder="11111111111" inputmode="numeric" autocomplete="off" />
+                    placeholder="1234567890" inputmode="numeric" autocomplete="off" maxlength="10" />
                 @error('tax_number')
                     <p class="text-error text-sm">{{ $message }}</p>
                 @enderror

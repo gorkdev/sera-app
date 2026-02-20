@@ -27,21 +27,36 @@
                                 Güvenliğiniz için e-postanızı doğruluyoruz.
                             </p>
                         </div>
-
-                        <div class="text-sm text-base-content/70">
-                            Kodu almadınız mı? Sağ taraftan tekrar gönderebilirsiniz.
-                        </div>
+                        @if (($showSuccessAlert ?? false) || session('email_verified'))
+                            <div class="text-sm text-base-content/70">
+                                E-posta doğrulandı. Admin onayı sonrası giriş yapabilirsiniz.
+                            </div>
+                        @else
+                            <div class="text-sm text-base-content/70">
+                                Kodu almadınız mı? Sağ taraftan tekrar gönderebilirsiniz.
+                            </div>
+                        @endif
                     </div>
                 </div>
 
-                {{-- Sağ: form --}}
+                {{-- Sağ: form veya success --}}
                 <div class="p-6 sm:p-10">
-                    <h2 class="text-xl font-semibold text-base-content">E-postanı doğrula</h2>
-                    <p class="text-base-content/60 mt-1 mb-6">
-                        <span class="font-medium">{{ $maskedEmail }}</span> adresine gönderdiğimiz 6 haneli kodu gir.
-                    </p>
+                    @if (($showSuccessAlert ?? false) || session('email_verified'))
+                        <h2 class="text-xl font-semibold text-base-content">E-posta doğrulandı</h2>
+                        <p class="text-base-content/60 mt-1 mb-6">Admin onayı sonrası giriş yapabilirsiniz.</p>
+                    @else
+                        <h2 class="text-xl font-semibold text-base-content">E-postanı doğrula</h2>
+                        <p class="text-base-content/60 mt-1 mb-6">
+                            <span class="font-medium">{{ $maskedEmail }}</span> adresine gönderdiğimiz 6 haneli kodu gir.
+                        </p>
+                    @endif
 
-                    @if (session('success'))
+                    @if (($showSuccessAlert ?? false) || session('email_verified'))
+                        <div role="alert" class="alert alert-success mb-4">
+                            @svg('heroicon-s-check-circle', 'h-5 w-5 shrink-0')
+                            <span>E-posta doğrulandı.</span>
+                        </div>
+                    @elseif (session('success'))
                         <div role="alert" class="alert alert-success mb-4">
                             @svg('heroicon-s-check-circle', 'h-5 w-5 shrink-0')
                             <span>{{ session('success') }}</span>
@@ -57,34 +72,36 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('dealer.verify.submit') }}" data-verify-form class="space-y-5">
-                        @csrf
-
-                        <input type="hidden" name="code" value="" data-verify-code />
-
-                        <div class="flex items-center justify-between gap-2 sm:gap-3">
-                            @for ($i = 0; $i < 6; $i++)
-                                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1"
-                                    class="input input-bordered w-12 sm:w-14 text-center text-lg font-semibold"
-                                    data-code-input aria-label="Kod {{ $i + 1 }}" {{ $i === 0 ? 'autofocus' : '' }}
-                                    autocomplete="{{ $i === 0 ? 'one-time-code' : 'off' }}" />
-                            @endfor
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-full">Doğrula</button>
-                    </form>
-
-                    <div class="mt-4 flex items-center justify-between gap-3">
-                        <form method="POST" action="{{ route('dealer.verify.resend') }}" data-resend-form class="flex-1">
+                    @unless ($showSuccessAlert ?? false)
+                        <form method="POST" action="{{ route('dealer.verify.submit') }}" data-verify-form class="space-y-5">
                             @csrf
-                            <button type="submit" class="btn btn-outline w-full" data-resend-btn
-                                data-cooldown="{{ (int) ($cooldownSeconds ?? 0) }}">
-                                Kodu tekrar gönder
-                            </button>
+
+                            <input type="hidden" name="code" value="" data-verify-code />
+
+                            <div class="flex items-center justify-between gap-2 sm:gap-3">
+                                @for ($i = 0; $i < 6; $i++)
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1"
+                                        class="input input-bordered w-12 sm:w-14 text-center text-lg font-semibold"
+                                        data-code-input aria-label="Kod {{ $i + 1 }}" {{ $i === 0 ? 'autofocus' : '' }}
+                                        autocomplete="{{ $i === 0 ? 'one-time-code' : 'off' }}" />
+                                @endfor
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-full">Doğrula</button>
                         </form>
 
-                        <a href="{{ route('dealer.register') }}" class="btn btn-ghost">Geri Dön</a>
-                    </div>
+                        <div class="mt-4 flex items-center justify-between gap-3">
+                            <form method="POST" action="{{ route('dealer.verify.resend') }}" data-resend-form class="flex-1">
+                                @csrf
+                                <button type="submit" class="btn btn-outline w-full" data-resend-btn
+                                    data-cooldown="{{ (int) ($cooldownSeconds ?? 0) }}">
+                                    Kodu tekrar gönder
+                                </button>
+                            </form>
+
+                            <a href="{{ route('dealer.register') }}" class="btn btn-ghost">Geri Dön</a>
+                        </div>
+                    @endunless
 
                     <div class="mt-8 text-center md:hidden">
                         <a href="{{ route('home') }}" class="text-base-content/60 hover:text-base-content link-hover">

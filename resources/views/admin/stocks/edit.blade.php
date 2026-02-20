@@ -250,7 +250,7 @@
                                 <tr>
                                     <td>
                                         {{ formatliTarih($log->waste_date) }}
-                                        @if($log->waste_date instanceof \Carbon\Carbon && $log->waste_date->format('H:i') !== '00:00')
+                                        @if ($log->waste_date instanceof \Carbon\Carbon && $log->waste_date->format('H:i') !== '00:00')
                                             <span class="text-xs text-base-content/50 ml-1">
                                                 {{ $log->waste_date->format('H:i') }}
                                             </span>
@@ -274,10 +274,9 @@
                                         {{ $log->recordedByAdmin->name ?? '—' }}
                                     </td>
                                     <td class="text-right">
-                                        <button type="button" 
+                                        <button type="button"
                                             onclick="confirmDeleteWaste({{ $log->id }}, {{ $log->quantity }}, '{{ $log->waste_type_label }}')"
-                                            class="btn btn-xs btn-error btn-ghost gap-1"
-                                            title="Zayiat Kaydını Sil">
+                                            class="btn btn-xs btn-error btn-ghost gap-1" title="Zayiat Kaydını Sil">
                                             @svg('heroicon-o-trash', 'h-4 w-4')
                                         </button>
                                     </td>
@@ -445,7 +444,7 @@
             const title = document.getElementById('confirm_delete_waste_title');
             const message = document.getElementById('confirm_delete_waste_message');
             const yesBtn = document.getElementById('confirm_delete_waste_yes');
-            
+
             title.textContent = 'Zayiat Kaydı Silme Onayı';
             message.innerHTML = `
                 <div class="space-y-2">
@@ -454,13 +453,13 @@
                     <p class="mt-3">Bu zayiat kaydını silmek istediğinize emin misiniz? Stok miktarı güncellenecektir.</p>
                 </div>
             `;
-            
+
             yesBtn.onclick = function() {
                 const form = document.getElementById('delete-waste-form');
-                form.action = '{{ route("admin.stocks.delete-waste", ":id") }}'.replace(':id', wasteLogId);
+                form.action = '{{ route('admin.stocks.delete-waste', ':id') }}'.replace(':id', wasteLogId);
                 form.submit();
             };
-            
+
             modal.showModal();
         }
     </script>

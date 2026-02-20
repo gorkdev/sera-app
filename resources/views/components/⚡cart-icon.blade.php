@@ -1,4 +1,5 @@
-<div class="relative">
+<div class="relative" @if($shouldPoll ?? false) wire:poll.5s @endif>
+    {{-- When dealer: poll every 5s so other devices/tabs see cart updates --}}
     {{-- Cart button in navbar --}}
     <button
         type="button"
@@ -7,11 +8,11 @@
         aria-label="Sepet"
     >
         @svg('heroicon-o-shopping-cart', 'h-6 w-6')
-        @if($count > 0)
+        @if($totalQuantity > 0)
             <span
                 class="badge badge-primary badge-sm absolute -top-1 -right-1 rounded-full px-1.5"
             >
-                {{ $count }}
+                {{ $totalQuantity }}
             </span>
         @endif
     </button>

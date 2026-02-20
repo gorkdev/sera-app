@@ -34,7 +34,9 @@
                 @svg('heroicon-o-information-circle', 'h-5 w-5 shrink-0')
                 <div>
                     <p class="font-medium">Ne doldurmalıyım?</p>
-                    <p class="text-sm opacity-90">Parti Adı: Bayilerin göreceği parti ismi. Örn: "Şubat 2026 Partisi". Açıklama: Parti hakkında bilgi (opsiyonel). Parti oluşturulduğunda "Taslak" durumunda olur. Stokları yükledikten sonra "Aktif Et" ile bayilere açabilirsiniz.</p>
+                    <p class="text-sm opacity-90">Parti Adı: Bayilerin göreceği parti ismi. Örn: "Şubat 2026 Partisi".
+                        Açıklama: Parti hakkında bilgi (opsiyonel). Parti oluşturulduğunda "Taslak" durumunda olur. Stokları
+                        yükledikten sonra "Aktif Et" ile bayilere açabilirsiniz.</p>
                 </div>
             </div>
             <div class="space-y-4">
@@ -91,7 +93,8 @@
                 @svg('heroicon-o-information-circle', 'h-5 w-5 shrink-0')
                 <div>
                     <p class="font-medium">Lojistik Detayları</p>
-                    <p class="text-sm opacity-90">Tedarikçi ve tır plakası bilgileri zorunludur. Yolculuk süresi opsiyoneldir. Bu veriler çiçeğin tazelik skorunu ve maliyet hesaplamalarını etkiler.</p>
+                    <p class="text-sm opacity-90">Tedarikçi ve tır plakası bilgileri zorunludur. Yolculuk süresi
+                        opsiyoneldir. Bu veriler çiçeğin tazelik skorunu ve maliyet hesaplamalarını etkiler.</p>
                 </div>
             </div>
             <div class="space-y-4">
@@ -147,7 +150,8 @@
                 @svg('heroicon-o-information-circle', 'h-5 w-5 shrink-0')
                 <div>
                     <p class="font-medium">Maliyet Hesaplamaları</p>
-                    <p class="text-sm opacity-90">Birim alış fiyatı, lojistik maliyeti ve gümrük/vergi masrafları zorunludur. Bu bilgiler istatistik ve kar analizi için kullanılır.</p>
+                    <p class="text-sm opacity-90">Birim alış fiyatı, lojistik maliyeti ve gümrük/vergi masrafları
+                        zorunludur. Bu bilgiler istatistik ve kar analizi için kullanılır.</p>
                 </div>
             </div>
             <div class="space-y-4">
@@ -169,7 +173,8 @@
                     </div>
                     <div class="form-control">
                         <label for="purchase_price_per_unit" class="label">
-                            <span class="label-text font-medium">Birim Alış Fiyatı <span class="text-error">*</span></span>
+                            <span class="label-text font-medium">Birim Alış Fiyatı <span
+                                    class="text-error">*</span></span>
                         </label>
                         <input type="number" id="purchase_price_per_unit" name="purchase_price_per_unit"
                             value="{{ old('purchase_price_per_unit') }}"
@@ -184,7 +189,8 @@
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div class="form-control">
                         <label for="logistics_cost" class="label">
-                            <span class="label-text font-medium">Lojistik Maliyeti <span class="text-error">*</span></span>
+                            <span class="label-text font-medium">Lojistik Maliyeti <span
+                                    class="text-error">*</span></span>
                         </label>
                         <input type="number" id="logistics_cost" name="logistics_cost"
                             value="{{ old('logistics_cost') }}"
@@ -196,7 +202,8 @@
                     </div>
                     <div class="form-control">
                         <label for="customs_cost" class="label">
-                            <span class="label-text font-medium">Gümrük/Vergi Masrafları <span class="text-error">*</span></span>
+                            <span class="label-text font-medium">Gümrük/Vergi Masrafları <span
+                                    class="text-error">*</span></span>
                         </label>
                         <input type="number" id="customs_cost" name="customs_cost" value="{{ old('customs_cost') }}"
                             class="input input-bordered input-md w-full @error('customs_cost') input-error @enderror"

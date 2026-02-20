@@ -111,7 +111,7 @@
                             <td>
                                 @php
                                     $statusLabel =
-                                        ['pending' => 'Onay Bekliyor', 'active' => 'Aktif', 'passive' => 'Pasif'][
+                                        ['pending' => 'Bekliyor', 'active' => 'Aktif', 'passive' => 'Pasif'][
                                             $dealer->status
                                         ] ?? $dealer->status;
                                     $statusClass = match ($dealer->status) {

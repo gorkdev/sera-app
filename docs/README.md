@@ -13,6 +13,7 @@ B2B toptan çiçek satış platformu projesinin teknik dokümantasyonu.
 | [Frontend](./FRONTEND.md)              | Layouts, Tailwind, DaisyUI                         |
 | [Auth Formları](./AUTH-FORMS.md)       | Giriş/kayıt formları, validasyon, flip kart, modal |
 | [Veritabanı](./DATABASE.md)            | Modeller, migrations, seeders                      |
+| [Sepet](./CART.md)                     | DB sepeti, Livewire, anında güncelleme, polling    |
 | [Rotalar](./ROUTES.md)                 | URL yapısı ve route referansı                      |
 | [Konfigürasyon](./CONFIG.md)           | config/sera.php ayarları                           |
 
@@ -93,6 +94,14 @@ php artisan serve
 14. **Ürünler CRUD** — Kategori, SKU, fiyat, birim, stok, min sipariş, filtreleme
 15. Ürün her zaman açık; panelde pasife alırsa görünmez.
 
+### Sepet
+
+17. **Veritabanı sepeti** — Bayi girişli sepet `carts` / `cart_items` tablolarında; aynı bayi tüm cihazlarda aynı sepeti görür.
+18. **CartService** — Sepet CRUD, getOrCreateCart, getItemsForDisplay, getTotalQuantity, login sonrası session sepetini DB’ye merge.
+19. **Livewire CartIcon** — Navbar badge + sağ drawer; `cart-updated` event’i ile sayfa yenilenmeden güncelleme; badge ve drawer içeriği `render()` ile güncel veri.
+20. **Global toast** — Layout’ta `show-toast` dinleyicisi; sepete ekleme vb. mesajları tüm sayfalarda gösterilir.
+21. **Çoklu cihaz/sekme** — Bayi girişliyken `wire:poll.5s` ile periyodik yenileme; ikinci cihazda yapılan değişiklik en geç 5 saniyede yansır.
+
 ### Testler
 
-16. **Feature testler** — Bayi kayıt + email doğrulama + login akışları (tüm kritik durumlar), Admin login, Admin kategori/ürün oluşturma için uçtan uca testler.
+22. **Feature testler** — Bayi kayıt + email doğrulama + login akışları (tüm kritik durumlar), Admin login, Admin kategori/ürün oluşturma için uçtan uca testler.

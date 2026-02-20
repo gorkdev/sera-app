@@ -1,9 +1,10 @@
 <?php
 
+use App\Models\Category;
+use App\Models\Product;
+use App\Services\CartService;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Product;
-use App\Models\Category;
 
 new class extends Component {
     use WithPagination;
@@ -40,7 +41,7 @@ new class extends Component {
         $this->resetPage();
     }
 
-    public function addToCart(int $productId, int $quantity = 1): void
+    public function addToCart(int $productId, int $quantity = 1, CartService $cartService = null): void
     {
         if (! auth()->guard('dealer')->check()) {
             $this->dispatch('show-toast', [
@@ -51,9 +52,8 @@ new class extends Component {
             return;
         }
 
-        $product = Product::findOrFail($productId);
-
-        if (!$product->is_active) {
+        $product = Product::find($productId);
+        if (! $product || ! $product->is_active) {
             $this->dispatch('show-toast', [
                 'type' => 'error',
                 'message' => 'Bu ürün şu anda satışta değil.',
@@ -61,23 +61,11 @@ new class extends Component {
             return;
         }
 
-        $cart = session()->get('cart', []);
+        $cartService = $cartService ?? app(CartService::class);
+        $dealer = auth()->guard('dealer')->user();
+        $cartService->addItem($dealer, $productId, $quantity);
 
-        if (isset($cart[$productId])) {
-            $cart[$productId]['quantity'] += $quantity;
-        } else {
-            $cart[$productId] = [
-                'product_id' => $productId,
-                'name' => $product->name,
-                'price' => $product->price,
-                'image' => $product->image,
-                'quantity' => $quantity,
-            ];
-        }
-
-        session()->put('cart', $cart);
-
-        $totalQuantity = array_sum(array_column($cart, 'quantity'));
+        $totalQuantity = $cartService->getTotalQuantity($dealer);
 
         $this->dispatch('cart-updated', totalQuantity: $totalQuantity);
         $this->dispatch('show-toast', [
@@ -421,32 +409,7 @@ new class extends Component {
         </div>
     </div>
 
-    {{-- Toast Notification --}}
-    <div id="toast-container" class="toast toast-top toast-center z-50" style="display: none;">
-        <div id="toast-alert" class="alert shadow-lg min-w-[300px]">
-            <span id="toast-message" class="font-medium"></span>
-        </div>
-    </div>
-
     <script>
-        document.addEventListener('livewire:init', () => {
-            Livewire.on('show-toast', (event) => {
-                const container = document.getElementById('toast-container');
-                const alert = document.getElementById('toast-alert');
-                const message = document.getElementById('toast-message');
-
-                const isSuccess = event[0].type === 'success';
-                alert.className =
-                    `alert shadow-lg min-w-[300px] ${isSuccess ? 'alert-success' : 'alert-error'}`;
-                message.textContent = event[0].message;
-                container.style.display = 'block';
-
-                setTimeout(() => {
-                    container.style.display = 'none';
-                }, 3000);
-            });
-        });
-
         // Kategori aç/kapa animasyonu
         function toggleCategoryPanel(panelId) {
             const panel = document.getElementById(panelId);

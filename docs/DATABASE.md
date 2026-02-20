@@ -101,6 +101,29 @@ Modeller, migrations ve seeders.
 | verified_at | timestamp (nullable) | Kod başarıyla doğrulandığında doldurulur |
 | created_at / updated_at | timestamps | |
 
+### `carts`
+
+| Alan | Tip | Açıklama |
+|------|-----|----------|
+| id | bigint | PK |
+| dealer_id | bigint (FK) | Bayi; cascade on delete |
+| timestamps | | created_at, updated_at |
+
+Bayi girişli sepet burada tutulur; bir bayinin tek aktif sepeti vardır.
+
+### `cart_items`
+
+| Alan | Tip | Açıklama |
+|------|-----|----------|
+| id | bigint | PK |
+| cart_id | bigint (FK) | Sepet; cascade on delete |
+| product_id | bigint (FK) | Ürün; cascade on delete |
+| quantity | unsigned int | Adet |
+| unit_price | decimal(12,2) | Sepete eklendiği andaki birim fiyat |
+| timestamps | | |
+
+Unique: `(cart_id, product_id)`. Ayrıntı için [Sepet](./CART.md) dokümanına bakın.
+
 ### Standart Laravel Tabloları
 
 - `users` — Standart kullanıcı (minimal kullanım)
@@ -124,7 +147,7 @@ Modeller, migrations ve seeders.
 - **Tablo:** dealers
 - **Auth:** Authenticatable, Notifiable
 - **Trait:** SoftDeletes
-- **İlişki:** belongsTo(DealerGroup)
+- **İlişkiler:** belongsTo(DealerGroup), hasOne(Cart)
 - **Fillable (özet):** dealer_group_id, company_name, contact_name, email, password, phone, tax_office, tax_number, tax_type, city, district, address, kvkk_consent, email_verified_at, status
 
 ### DealerGroup
@@ -144,6 +167,20 @@ Modeller, migrations ve seeders.
 
 - **Tablo:** products
 - **İlişki:** belongsTo(Category)
+
+### Cart
+
+- **Tablo:** carts
+- **İlişkiler:** belongsTo(Dealer), hasMany(CartItem)
+- **Fillable:** dealer_id
+- Bayi girişli sepet; detay için [Sepet](./CART.md).
+
+### CartItem
+
+- **Tablo:** cart_items
+- **İlişkiler:** belongsTo(Cart), belongsTo(Product)
+- **Fillable:** cart_id, product_id, quantity, unit_price
+- **Casts:** quantity → integer, unit_price → decimal:2
 
 ### User
 

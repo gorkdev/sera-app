@@ -135,8 +135,8 @@ class DealerRegistrationFlowTest extends TestCase
             'code' => $code,
         ]);
 
-        $response->assertRedirect(route('dealer.login'));
-        $response->assertSessionHas('success');
+        $response->assertRedirect(route('dealer.verify.show'));
+        $response->assertSessionHas('email_verified');
 
         $dealer->refresh();
         $verification = DealerEmailVerification::where('dealer_id', $dealer->id)->firstOrFail();
@@ -347,7 +347,7 @@ class DealerRegistrationFlowTest extends TestCase
     }
 
     #[Test]
-    public function verified_and_active_dealer_is_redirected_to_panel_when_already_logged_in()
+    public function verified_and_active_dealer_is_redirected_to_home_when_already_logged_in()
     {
         $group = DealerGroup::factory()->create(['is_default' => true]);
 
@@ -373,7 +373,7 @@ class DealerRegistrationFlowTest extends TestCase
 
         $response = $this->get(route('dealer.login'));
 
-        $response->assertRedirect(route('panel'));
+        $response->assertRedirect(route('home'));
     }
 }
 

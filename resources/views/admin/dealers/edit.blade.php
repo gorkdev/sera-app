@@ -137,8 +137,7 @@
                             </div>
                             <div class="form-control">
                                 <label for="tax_number" class="label">
-                                    <span class="label-text font-medium">Vergi No / TCKN <span
-                                            class="text-error">*</span></span>
+                                    <span class="label-text font-medium">Vergi No<span class="text-error">*</span></span>
                                 </label>
                                 <input type="text" id="tax_number" name="tax_number"
                                     value="{{ old('tax_number', $dealer->tax_number) }}"
@@ -275,7 +274,7 @@
                         <div class="text-sm font-medium">
                             @php
                                 $statusLabel =
-                                    ['pending' => 'Onay Bekliyor', 'active' => 'Aktif', 'passive' => 'Pasif'][
+                                    ['pending' => 'Bekliyor', 'active' => 'Aktif', 'passive' => 'Pasif'][
                                         $dealer->status
                                     ] ?? $dealer->status;
                                 $statusClass = match ($dealer->status) {
@@ -320,7 +319,7 @@
                         </div>
                     </div>
                     <div>
-                        <div class="text-xs text-base-content/60 mb-1">Vergi No / TCKN</div>
+                        <div class="text-xs text-base-content/60 mb-1">Vergi No</div>
                         <div class="text-sm font-medium">{{ $dealer->tax_number ?? '—' }}</div>
                     </div>
                     <div>

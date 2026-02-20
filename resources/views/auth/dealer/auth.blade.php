@@ -132,7 +132,7 @@
                                         data-error-for="tax_office">{{ $registerErrors->first('tax_office') }}</p>
                                 </div>
                                 <div class="flex flex-col gap-2">
-                                    <label for="tax_number" class="label py-0 font-medium">Vergi No / TCKN</label>
+                                    <label for="tax_number" class="label py-0 font-medium">Vergi No</label>
                                     <input type="text" id="tax_number" name="tax_number"
                                         value="{{ old('tax_number') }}"
                                         class="input input-bordered w-full {{ $registerErrors->has('tax_number') ? 'input-error' : '' }}"

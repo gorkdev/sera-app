@@ -2,38 +2,32 @@
 
 namespace App\Livewire;
 
-use Illuminate\Support\Arr;
+use App\Services\CartService;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class CartIcon extends Component
 {
-    public int $count = 0;
     public bool $open = false;
     public bool $showCheckoutModal = false;
 
-    protected $listeners = [
-        'cart-updated' => 'onCartUpdated',
-    ];
-
     public function mount(): void
     {
-        $this->syncCount();
+        //
     }
 
-    private function syncCount(): void
+    /** When another component dispatches cart-updated (e.g. add to cart), re-render so badge and drawer show fresh data. */
+    #[On('cart-updated')]
+    public function onCartUpdated(): void
     {
-        $cart = session('cart', []);
-        $this->count = (int) array_sum(Arr::pluck($cart, 'quantity'));
+        // No-op: Livewire re-renders the component after this, so render() returns fresh cart data.
     }
 
-    public function onCartUpdated(?int $totalQuantity = null): void
+    private function dealer(): ?Authenticatable
     {
-        if ($totalQuantity !== null) {
-            $this->count = $totalQuantity;
-        } else {
-            $this->syncCount();
-        }
+        return Auth::guard('dealer')->user();
     }
 
     public function toggle(): void
@@ -41,100 +35,112 @@ class CartIcon extends Component
         $this->open = ! $this->open;
     }
 
-    public function removeItem(int $productId): void
+    public function removeItem(int $productId, CartService $cartService): void
     {
-        $cart = session('cart', []);
-        if (isset($cart[$productId])) {
-            unset($cart[$productId]);
-            session()->put('cart', $cart);
-        }
-        $this->syncCount();
-    }
-
-    public function clear(): void
-    {
-        session()->forget('cart');
-        $this->count = 0;
-    }
-
-    public function incrementItem(int $productId): void
-    {
-        $cart = session('cart', []);
-        if (! isset($cart[$productId])) {
-            return;
-        }
-
-        $cart[$productId]['quantity'] = (int) ($cart[$productId]['quantity'] ?? 0) + 1;
-        session()->put('cart', $cart);
-        $this->syncCount();
-    }
-
-    public function decrementItem(int $productId): void
-    {
-        $cart = session('cart', []);
-        if (! isset($cart[$productId])) {
-            return;
-        }
-
-        $current = (int) ($cart[$productId]['quantity'] ?? 0);
-        if ($current <= 1) {
-            unset($cart[$productId]);
+        $dealer = $this->dealer();
+        if ($dealer) {
+            $cartService->removeItem($dealer, $productId);
         } else {
-            $cart[$productId]['quantity'] = $current - 1;
+            $cart = session('cart', []);
+            if (isset($cart[$productId])) {
+                unset($cart[$productId]);
+                session()->put('cart', $cart);
+            }
         }
+    }
 
-        if (empty($cart)) {
+    public function clear(CartService $cartService): void
+    {
+        $dealer = $this->dealer();
+        if ($dealer) {
+            $cartService->clear($dealer);
+        } else {
             session()->forget('cart');
-        } else {
-            session()->put('cart', $cart);
         }
-
-        $this->syncCount();
     }
 
-    public function changeItemQuantity(int $productId, int $delta): void
+    public function incrementItem(int $productId, CartService $cartService): void
+    {
+        $dealer = $this->dealer();
+        if ($dealer) {
+            $cartService->incrementItem($dealer, $productId);
+        } else {
+            $cart = session('cart', []);
+            if (isset($cart[$productId])) {
+                $cart[$productId]['quantity'] = (int) ($cart[$productId]['quantity'] ?? 0) + 1;
+                session()->put('cart', $cart);
+            }
+        }
+    }
+
+    public function decrementItem(int $productId, CartService $cartService): void
+    {
+        $dealer = $this->dealer();
+        if ($dealer) {
+            $cartService->decrementItem($dealer, $productId);
+        } else {
+            $cart = session('cart', []);
+            if (! isset($cart[$productId])) {
+                return;
+            }
+            $current = (int) ($cart[$productId]['quantity'] ?? 0);
+            if ($current <= 1) {
+                unset($cart[$productId]);
+            } else {
+                $cart[$productId]['quantity'] = $current - 1;
+            }
+            if (empty($cart)) {
+                session()->forget('cart');
+            } else {
+                session()->put('cart', $cart);
+            }
+        }
+    }
+
+    public function changeItemQuantity(int $productId, int $delta, CartService $cartService): void
     {
         if ($delta === 0) {
             return;
         }
-
-        $cart = session('cart', []);
-        if (! isset($cart[$productId])) {
-            return;
-        }
-
-        $current = (int) ($cart[$productId]['quantity'] ?? 0);
-        $new = $current + $delta;
-
-        if ($new <= 0) {
-            unset($cart[$productId]);
+        $dealer = $this->dealer();
+        if ($dealer) {
+            $cartService->updateQuantity($dealer, $productId, $delta);
         } else {
-            $cart[$productId]['quantity'] = $new;
+            $cart = session('cart', []);
+            if (! isset($cart[$productId])) {
+                return;
+            }
+            $current = (int) ($cart[$productId]['quantity'] ?? 0);
+            $new = $current + $delta;
+            if ($new <= 0) {
+                unset($cart[$productId]);
+            } else {
+                $cart[$productId]['quantity'] = $new;
+            }
+            if (empty($cart)) {
+                session()->forget('cart');
+            } else {
+                session()->put('cart', $cart);
+            }
         }
-
-        if (empty($cart)) {
-            session()->forget('cart');
-        } else {
-            session()->put('cart', $cart);
-        }
-
-        $this->syncCount();
     }
 
-    public function openCheckoutModal(): void
+    public function openCheckoutModal(CartService $cartService): void
     {
-        $cart = session('cart', []);
+        $dealer = $this->dealer();
+        $cart = $dealer
+            ? $cartService->getItemsForDisplay($dealer)
+            : session('cart', []);
 
         if (empty($cart)) {
             return;
         }
 
-        if (! Auth::guard('dealer')->check()) {
+        if (! $dealer) {
             $this->dispatch('show-toast', [
                 'type' => 'error',
                 'message' => 'Satın almak için önce bayi girişi yapmalısınız.',
             ]);
-
             return;
         }
 
@@ -146,29 +152,28 @@ class CartIcon extends Component
         $this->showCheckoutModal = false;
     }
 
-    public function confirmCheckout(): void
+    public function confirmCheckout(CartService $cartService): void
     {
-        $cart = session('cart', []);
+        $dealer = $this->dealer();
+        $cart = $dealer
+            ? $cartService->getItemsForDisplay($dealer)
+            : session('cart', []);
 
         if (empty($cart)) {
             $this->showCheckoutModal = false;
-
             return;
         }
 
-        if (! Auth::guard('dealer')->check()) {
+        if (! $dealer) {
             $this->showCheckoutModal = false;
-
             $this->dispatch('show-toast', [
                 'type' => 'error',
                 'message' => 'Satın almak için önce bayi girişi yapmalısınız.',
             ]);
-
             return;
         }
 
-        session()->forget('cart');
-        $this->count = 0;
+        $cartService->clear($dealer);
         $this->open = false;
         $this->showCheckoutModal = false;
 
@@ -178,12 +183,15 @@ class CartIcon extends Component
         ]);
     }
 
-    public function render()
+    public function render(CartService $cartService)
     {
-        $cart = session('cart', []);
+        $dealer = $this->dealer();
+        $cart = $dealer
+            ? $cartService->getItemsForDisplay($dealer)
+            : session('cart', []);
+
         $total = 0;
         $subtotal = 0;
-
         foreach ($cart as $item) {
             $qty = (int) ($item['quantity'] ?? 0);
             $price = (float) ($item['price'] ?? 0);
@@ -195,7 +203,7 @@ class CartIcon extends Component
             'cartItems' => $cart,
             'totalQuantity' => $total,
             'subtotal' => $subtotal,
+            'shouldPoll' => (bool) $dealer,
         ]);
     }
 }
-

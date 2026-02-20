@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dealer;
 use App\Http\Controllers\Controller;
 use App\Models\Dealer;
 use App\Models\DealerGroup;
+use App\Services\CartService;
 use App\Services\DealerEmailVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -67,7 +68,7 @@ class AuthController extends Controller
     public function showLoginForm()
     {
         if (Auth::guard('dealer')->check()) {
-            return redirect()->route('panel');
+            return redirect()->route('home');
         }
 
         return view('auth.dealer.login');
@@ -76,7 +77,7 @@ class AuthController extends Controller
     public function showRegisterForm()
     {
         if (Auth::guard('dealer')->check()) {
-            return redirect()->route('panel');
+            return redirect()->route('home');
         }
 
         return view('auth.dealer.register');
@@ -131,7 +132,9 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('panel'));
+        app(CartService::class)->mergeSessionCartIntoDealerCart($dealer);
+
+        return redirect()->intended(route('home'));
     }
 
     private function maskEmail(string $email): string
@@ -180,7 +183,7 @@ class AuthController extends Controller
             'contact_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:dealers,email'],
             'phone' => ['required', 'string', 'max:20', function (string $attribute, mixed $value, \Closure $fail) {
-                $digits = preg_replace('/\D+/', '', (string) $value);
+                $digits = self::normalizeDigits((string) $value);
                 if (Str::startsWith($digits, '5')) {
                     $digits = '0'.$digits;
                 }
@@ -192,7 +195,7 @@ class AuthController extends Controller
             }],
             'tax_office' => ['required', 'string', 'max:255'],
             'tax_number' => ['required', 'string', 'max:32', function (string $attribute, mixed $value, \Closure $fail) {
-                $digits = preg_replace('/\D+/', '', (string) $value);
+                $digits = self::normalizeDigits((string) $value);
                 if (! ($digits !== '' && (strlen($digits) === 10 || strlen($digits) === 11))) {
                     $fail('Vergi no / TCKN 10 veya 11 haneli olmalı.');
                 }
@@ -242,13 +245,13 @@ class AuthController extends Controller
 
         $defaultGroupId = DealerGroup::query()->where('is_default', true)->value('id');
 
-        $phoneDigits = preg_replace('/\D+/', '', (string) $validated['phone']);
+        $phoneDigits = self::normalizeDigits((string) $validated['phone']);
         if (Str::startsWith($phoneDigits, '5')) {
             $phoneDigits = '0'.$phoneDigits;
         }
         $phoneDigits = Str::substr($phoneDigits, 0, 11);
 
-        $taxNumberDigits = preg_replace('/\D+/', '', (string) $validated['tax_number']);
+        $taxNumberDigits = self::normalizeDigits((string) $validated['tax_number']);
 
         $cityUpper = self::trUpper((string) $validated['city']);
         $districtUpper = self::trUpper((string) $validated['district']);
@@ -286,5 +289,31 @@ class AuthController extends Controller
         }
 
         return redirect()->route('dealer.verify.show')->with('success', $message);
+    }
+
+    private static function normalizeDigits(string $value): string
+    {
+        if (class_exists(\IntlChar::class) && function_exists('mb_ord')) {
+            $digits = '';
+            if (preg_match_all('/\p{Nd}/u', $value, $matches)) {
+                foreach ($matches[0] as $ch) {
+                    $cp = mb_ord($ch);
+                    $d = \IntlChar::digit($cp);
+                    if ($d >= 0) {
+                        $digits .= (string) $d;
+                    }
+                }
+            }
+
+            if ($digits !== '') {
+                return $digits;
+            }
+        }
+
+        $from = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩','۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+        $to   = ['0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9'];
+        $value = str_replace($from, $to, $value);
+
+        return preg_replace('/\D+/', '', $value);
     }
 }

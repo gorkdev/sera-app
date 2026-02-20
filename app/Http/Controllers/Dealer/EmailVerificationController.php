@@ -14,6 +14,16 @@ class EmailVerificationController extends Controller
 {
     public function show(Request $request)
     {
+        // Doğrulama az önce başarıyla tamamlandıysa aynı sayfada success alert göster (yönlendirme yapma)
+        if ($request->session()->get('email_verified_success') || $request->session()->has('email_verified')) {
+            $request->session()->forget('email_verified_success');
+            return view('auth.dealer.verify', [
+                'maskedEmail' => '',
+                'cooldownSeconds' => 0,
+                'showSuccessAlert' => true,
+            ]);
+        }
+
         $dealerId = (int) $request->session()->get('dealer_verification_id', 0);
         if (! $dealerId) {
             return redirect()->route('dealer.register');
@@ -42,6 +52,7 @@ class EmailVerificationController extends Controller
         return view('auth.dealer.verify', [
             'maskedEmail' => $masked,
             'cooldownSeconds' => $cooldownSeconds,
+            'showSuccessAlert' => false,
         ]);
     }
 
@@ -77,10 +88,11 @@ class EmailVerificationController extends Controller
             'email_verified_at' => now(),
         ])->save();
 
+        $request->session()->put('email_verified_success', true);
         $request->session()->forget('dealer_verification_id');
 
-        return redirect()->route('dealer.login')
-            ->with('success', 'E-posta doğrulandı. Admin onayı sonrası giriş yapabilirsiniz.');
+        return redirect()->route('dealer.verify.show')
+            ->with('email_verified', true);
     }
 
     public function resend(Request $request, DealerEmailVerificationService $service)

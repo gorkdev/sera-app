@@ -51,16 +51,16 @@ class RegisterForm extends Component
                 }
             }],
             'tax_office' => ['required', 'string', 'max:255'],
-            'tax_number' => ['required', 'string', 'max:32', function (string $attribute, mixed $value, \Closure $fail) {
-                $digits = preg_replace('/\D+/', '', (string) $value);
+            'tax_number' => ['required', 'string', 'max:10', function (string $attribute, mixed $value, \Closure $fail) {
+                $digits = self::normalizeDigits((string) $value);
                 if ($digits === '') {
-                    $fail('Vergi no / TCKN gerekli.');
+                    $fail('Vergi no gerekli.');
 
                     return;
                 }
 
-                if (! (strlen($digits) === 10 || strlen($digits) === 11)) {
-                    $fail('Vergi no / TCKN 10 veya 11 haneli olmalı.');
+                if (strlen($digits) !== 10) {
+                    $fail('Vergi no 10 haneli olmalı.');
                 }
             }],
             'city' => ['required', 'string', 'max:100', function (string $attribute, mixed $value, \Closure $fail) use ($cityDistrictMap) {
@@ -93,7 +93,7 @@ class RegisterForm extends Component
             'email.unique' => 'Bu e-posta adresi zaten kayıtlı.',
             'phone.required' => 'Telefon gerekli.',
             'tax_office.required' => 'Vergi dairesi gerekli.',
-            'tax_number.required' => 'Vergi no / TCKN gerekli.',
+            'tax_number.required' => 'Vergi no gerekli.',
             'city.required' => 'İl gerekli.',
             'district.required' => 'İlçe gerekli.',
             'address.required' => 'Adres gerekli.',
@@ -118,10 +118,10 @@ class RegisterForm extends Component
             return;
         }
 
-        $taxNumberDigits = preg_replace('/\D+/', '', (string) $validated['tax_number']);
+        $taxNumberDigits = self::normalizeDigits((string) $validated['tax_number']);
         $cityUpper = self::trUpper((string) $validated['city']);
         $districtUpper = self::trUpper((string) $validated['district']);
-        $taxType = strlen($taxNumberDigits) === 11 ? 'tckn' : 'tax';
+        $taxType = 'tax'; // Vergi no her zaman 10 haneli
 
         try {
             $dealer = Dealer::create([
@@ -133,7 +133,6 @@ class RegisterForm extends Component
                 'tax_office' => $validated['tax_office'],
                 'tax_number' => $taxNumberDigits ?: $validated['tax_number'],
                 'tax_type' => $taxType,
-                'tax_type' => $validated['tax_type'],
                 'city' => $cityUpper,
                 'district' => $districtUpper,
                 'address' => $validated['address'],
@@ -180,6 +179,34 @@ class RegisterForm extends Component
         }
 
         return strtoupper($value);
+    }
+
+    private static function normalizeDigits(string $value): string
+    {
+        // Prefer IntlChar-based extraction of decimal digits (covers wide Unicode digits)
+        if (class_exists(\IntlChar::class) && function_exists('mb_ord')) {
+            $digits = '';
+            if (preg_match_all('/\p{Nd}/u', $value, $matches)) {
+                foreach ($matches[0] as $ch) {
+                    $cp = mb_ord($ch);
+                    $d = \IntlChar::digit($cp);
+                    if ($d >= 0) {
+                        $digits .= (string) $d;
+                    }
+                }
+            }
+
+            if ($digits !== '') {
+                return $digits;
+            }
+        }
+
+        // Fallback: map common Arabic-Indic variants then strip non-digits
+        $from = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩','۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+        $to   = ['0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9'];
+        $value = str_replace($from, $to, $value);
+
+        return preg_replace('/\D+/', '', $value);
     }
 
     /**
