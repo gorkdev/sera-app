@@ -43,7 +43,7 @@ new class extends Component {
 
     public function addToCart(int $productId, int $quantity = 1, CartService $cartService = null): void
     {
-        if (! auth()->guard('dealer')->check()) {
+        if (!auth()->guard('dealer')->check()) {
             $this->dispatch('show-toast', [
                 'type' => 'error',
                 'message' => 'Fiyatları görmek ve sepete eklemek için önce bayi girişi yapmalısınız.',
@@ -53,7 +53,7 @@ new class extends Component {
         }
 
         $product = Product::find($productId);
-        if (! $product || ! $product->is_active) {
+        if (!$product || !$product->is_active) {
             $this->dispatch('show-toast', [
                 'type' => 'error',
                 'message' => 'Bu ürün şu anda satışta değil.',
@@ -90,7 +90,11 @@ new class extends Component {
 
     public function getProductsProperty()
     {
-        $query = Product::where('is_active', true)->with('category');
+        // Stok sadece party_stocks (Stoklar) tablosundan; products.stock_quantity kullanılmaz
+        $query = Product::query()
+            ->selectRaw('products.*, COALESCE((' . 'SELECT SUM(ps.total_quantity - ps.reserved_quantity - ps.sold_quantity - COALESCE(ps.waste_quantity, 0)) ' . 'FROM party_stocks ps ' . 'INNER JOIN parties p ON p.id = ps.party_id ' . 'WHERE ps.product_id = products.id AND p.status = ? AND p.deleted_at IS NULL AND p.arrived_at IS NOT NULL' . '), 0) as available_display', ['active'])
+            ->where('is_active', true)
+            ->with('category');
 
         if ($this->selectedCategory) {
             $query->where('category_id', $this->selectedCategory);
@@ -280,32 +284,21 @@ new class extends Component {
                                 @endif
 
                                 {{-- Stok Durumu Overlay --}}
-                                @if ($product->stock_quantity <= 0)
-                                    <div
-                                        class="absolute inset-0 bg-base-content/50 flex items-center justify-center backdrop-blur-sm">
-                                        <span class="badge badge-error badge-sm shadow-md">Stokta Yok</span>
-                                    </div>
-                                @endif
+                                @php $available = (int) ($product->available_display ?? 0); @endphp
+
 
                                 {{-- Hover Overlay --}}
                                 <div
                                     class="absolute inset-0 bg-gradient-to-t from-base-content/70 via-base-content/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end">
                                     <div class="w-full p-2">
-                                        @if(auth()->guard('dealer')->check())
+                                        @if (auth()->guard('dealer')->check())
                                             <button wire:click="addToCart({{ $product->id }})"
                                                 class="w-full btn btn-primary btn-xs gap-1 shadow-lg"
-                                                @disabled($product->stock_quantity <= 0)
-                                                title="{{ $product->stock_quantity <= 0 ? 'Stokta yok' : 'Sepete Ekle' }}">
+                                                @disabled($available <= 0)
+                                                title="{{ $available <= 0 ? 'Stokta yok' : 'Sepete Ekle' }}">
                                                 @svg('heroicon-o-shopping-cart', 'h-3.5 w-3.5')
                                                 <span class="text-xs">Ekle</span>
                                             </button>
-                                        @else
-                                            <a
-                                                href="{{ route('dealer.login') }}"
-                                                class="w-full btn btn-outline btn-xs gap-1 shadow-lg"
-                                            >
-                                                Bayi Girişi Yap
-                                            </a>
                                         @endif
                                     </div>
                                 </div>
@@ -320,49 +313,47 @@ new class extends Component {
                                 @endif
 
                                 <h3
-                                    class="text-sm font-semibold text-base-content mb-1.5 line-clamp-2 min-h-10 group-hover:text-primary transition-colors leading-tight">
+                                    class="text-sm font-semibold text-base-content mb-1.5 line-clamp-2 min-h-5 group-hover:text-primary transition-colors leading-tight">
                                     {{ $product->name }}
                                 </h3>
 
                                 <div class="flex items-center justify-between pt-2 border-t border-base-300/50 mt-2">
                                     <div class="min-w-0 flex-1">
-                                        @if(auth()->guard('dealer')->check())
+                                        @if (auth()->guard('dealer')->check())
                                             <p class="text-base font-bold text-primary mb-0.5">
                                                 {{ number_format($product->price, 2, ',', '.') }} ₺
                                             </p>
                                         @else
-                                            <p class="text-xs text-base-content/60 mb-0.5 italic">
+                                            <p class="text-xs text-base-content/60 mb-2 italic">
                                                 Fiyatları görmek için bayi girişi yapın.
                                             </p>
                                         @endif
                                         <div class="flex items-center gap-1.5 flex-wrap">
-                                            @if ($product->stock_quantity > 0)
+                                            @if ($available > 0)
                                                 <span class="badge badge-success badge-xs gap-0.5">
                                                     @svg('heroicon-o-check-circle', 'h-2.5 w-2.5')
-                                                    <span class="text-[10px]">Stokta</span>
+                                                    <span class="text-[10px]">Stokta var</span>
                                                 </span>
                                             @else
                                                 <span class="badge badge-error badge-xs gap-0.5">
                                                     @svg('heroicon-o-x-circle', 'h-2.5 w-2.5')
-                                                    <span class="text-[10px]">Yok</span>
+                                                    <span class="text-[10px]">Stokta yok</span>
                                                 </span>
                                             @endif
                                         </div>
                                     </div>
 
                                     {{-- Mobile Sepete Ekle Butonu --}}
-                                    @if(auth()->guard('dealer')->check())
+                                    @if (auth()->guard('dealer')->check())
                                         <button wire:click="addToCart({{ $product->id }})"
                                             class="btn btn-primary btn-xs gap-1 shrink-0 lg:hidden"
-                                            @disabled($product->stock_quantity <= 0)
-                                            title="{{ $product->stock_quantity <= 0 ? 'Stokta yok' : 'Sepete Ekle' }}">
+                                            @disabled($available <= 0)
+                                            title="{{ $available <= 0 ? 'Stokta yok' : 'Sepete Ekle' }}">
                                             @svg('heroicon-o-shopping-cart', 'h-3.5 w-3.5')
                                         </button>
                                     @else
-                                        <a
-                                            href="{{ route('dealer.login') }}"
-                                            class="btn btn-outline btn-xs gap-1 shrink-0 lg:hidden"
-                                        >
+                                        <a href="{{ route('dealer.login') }}"
+                                            class="btn btn-outline btn-xs gap-1 shrink-0 lg:hidden">
                                             Giriş Yap
                                         </a>
                                     @endif

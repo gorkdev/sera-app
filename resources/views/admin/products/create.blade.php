@@ -29,7 +29,8 @@
 
     <form method="POST" action="{{ route('admin.products.store') }}" class="admin-form space-y-6 max-w-3xl"
         enctype="multipart/form-data" id="product-form" data-units='@json($productUnits)' data-unit-conversions='[]'
-        data-existing-gallery="0" data-errors='@json($errors->keys())' data-ajax-submit="true">
+        data-existing-gallery="0" data-errors='@json($errors->keys())' data-ajax-submit="true"
+        data-success-redirect="{{ route('admin.products.index', ['scroll' => 'top']) }}">
         @csrf
 
         <div role="tablist" class="tabs tabs-boxed tabs-lg mb-6 bg-base-200/50 p-1 rounded-lg" id="product-tabs">
@@ -206,76 +207,6 @@
                     </div>
                 </section>
             </div>
-            <input type="radio" name="product_tabs" role="tab" class="tab" aria-label="Stok"
-                data-tab="stok" />
-            {{-- Tab 3: Stok --}}
-            <div role="tabpanel" class="tab-content py-4">
-                <section class="admin-form-section">
-                    <h2
-                        class="text-sm font-semibold uppercase tracking-wider text-base-content/70 mb-4 flex items-center gap-2">
-                        @svg('heroicon-o-cube', 'h-4 w-4')
-                        Stok
-                    </h2>
-                    <div class="alert alert-warning mb-4">
-                        @svg('heroicon-o-exclamation-triangle', 'h-5 w-5 shrink-0')
-                        <div>
-                            <p class="font-medium">Kritik stok uyarısı</p>
-                            <p class="text-sm opacity-90">Stok belirlediğiniz seviyeye (yüzde veya adet) ulaştığında uyarı
-                                gönderilir. Örn: 10</p>
-                        </div>
-                    </div>
-                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        <div class="form-control">
-                            <label for="stock_quantity" class="label"><span class="label-text font-medium">Stok Miktarı
-                                    <span class="text-error">*</span></span></label>
-                            <input type="number" id="stock_quantity" name="stock_quantity"
-                                value="{{ old('stock_quantity') }}"
-                                class="input input-bordered input-md w-full @error('stock_quantity') input-error @enderror"
-                                min="0" placeholder="0" />
-                            @error('stock_quantity')
-                                <p class="text-error text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div class="form-control">
-                            <label for="min_order_quantity" class="label"><span class="label-text font-medium">Min.
-                                    Sipariş <span class="text-error">*</span></span></label>
-                            <input type="number" id="min_order_quantity" name="min_order_quantity"
-                                value="{{ old('min_order_quantity') }}"
-                                class="input input-bordered input-md w-full @error('min_order_quantity') input-error @enderror"
-                                min="1" placeholder="1" />
-                            @error('min_order_quantity')
-                                <p class="text-error text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div class="form-control">
-                            <label for="critical_stock_type" class="label"><span class="label-text font-medium">Kritik
-                                    stok tipi</span></label>
-                            <select name="critical_stock_type" id="critical_stock_type" class="select select-md w-full">
-                                <option value="">— Seçin —</option>
-                                <option value="percent" {{ old('critical_stock_type') == 'percent' ? 'selected' : '' }}>
-                                    Yüzde (%)</option>
-                                <option value="quantity" {{ old('critical_stock_type') == 'quantity' ? 'selected' : '' }}>
-                                    Adet</option>
-                            </select>
-                        </div>
-                        <div class="form-control">
-                            <label for="critical_stock_value" class="label"><span class="label-text font-medium">Kritik
-                                    değer</span></label>
-                            <input type="number" id="critical_stock_value" name="critical_stock_value"
-                                value="{{ old('critical_stock_value') }}" class="input input-bordered input-md w-full"
-                                min="0" placeholder="10" />
-                        </div>
-                    </div>
-                    <div class="form-control mt-4" id="critical-ref-wrap" style="display:none">
-                        <label for="critical_stock_reference" class="label"><span
-                                class="label-text font-medium">Referans (yüzde için)</span><span
-                                class="label-text-alt">Örn: 100 — stok 100 iken %10 = 10 adet</span></label>
-                        <input type="number" id="critical_stock_reference" name="critical_stock_reference"
-                            value="{{ old('critical_stock_reference', 100) }}"
-                            class="input input-bordered input-md w-full max-w-xs" min="1" />
-                    </div>
-                </section>
-            </div>
             <input type="radio" name="product_tabs" role="tab" class="tab" aria-label="Özellikler"
                 data-tab="ozellikler" />
             {{-- Tab 4: Özellikler --}}
@@ -371,9 +302,6 @@
                 const tabFields = {
                     genel: ['category_id', 'name', 'slug', 'sku', 'description', 'image', 'gallery_images'],
                     fiyat: ['cost_price', 'price', 'unit', 'unit_conversions'],
-                    stok: ['stock_quantity', 'min_order_quantity', 'critical_stock_type', 'critical_stock_value',
-                        'critical_stock_reference'
-                    ],
                     ozellikler: ['featured_badges', 'origin', 'shelf_life_days'],
                     durum: ['is_active']
                 };

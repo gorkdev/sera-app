@@ -74,7 +74,14 @@
                             showFormErrors(form, data.errors || {});
                             scrollToFirstError(form);
                         } else if (response.status === 302) {
-                            window.location.href = response.headers.get('Location') || form.action;
+                            window.scrollTo(0, 0);
+                            const redirectUrl = response.headers.get('Location') || form.dataset.successRedirect || form.action;
+                            window.location.href = redirectUrl;
+                            return;
+                        } else if ((response.status === 0 || response.type === 'opaqueredirect') && form.dataset.successRedirect) {
+                            // redirect: 'manual' ile 302 bazen opaqueredirect (status 0) döner; yine listeye git
+                            window.scrollTo(0, 0);
+                            window.location.href = form.dataset.successRedirect;
                             return;
                         } else {
                             window.location.reload();
@@ -101,9 +108,6 @@
                 const tabFields = {
                     genel: ['category_id', 'name', 'slug', 'sku', 'description', 'image', 'gallery_images'],
                     fiyat: ['cost_price', 'price', 'unit', 'unit_conversions'],
-                    stok: ['stock_quantity', 'min_order_quantity', 'critical_stock_type',
-                        'critical_stock_value', 'critical_stock_reference'
-                    ],
                     ozellikler: ['featured_badges', 'origin', 'shelf_life_days'],
                     durum: ['is_active'],
                 };
@@ -307,16 +311,6 @@
                 });
             }
 
-            // --- Kritik stok: yüzde seçilince referans alanını göster ---
-            const criticalType = document.getElementById('critical_stock_type');
-            const criticalRefWrap = document.getElementById('critical-ref-wrap');
-            if (criticalType && criticalRefWrap) {
-                function toggleRef() {
-                    criticalRefWrap.style.display = criticalType.value === 'percent' ? 'block' : 'none';
-                }
-                criticalType.addEventListener('change', toggleRef);
-                toggleRef();
-            }
         });
     </script>
 @endpush

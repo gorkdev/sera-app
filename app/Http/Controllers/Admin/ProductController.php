@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -61,7 +62,6 @@ class ProductController extends Controller
             'unit_conversions' => ['nullable', 'array'],
             'unit_conversions.*.unit' => ['nullable', 'string', 'in:' . implode(',', $unitKeys) ?: 'adet'],
             'unit_conversions.*.adet' => ['nullable', 'integer', 'min:1'],
-            'stock_quantity' => ['required', 'integer', 'min:0'],
             'min_order_quantity' => ['required', 'integer', 'min:1'],
             'is_active' => ['required', 'accepted'],
             'critical_stock_type' => ['nullable', 'string', 'in:percent,quantity'],
@@ -84,14 +84,11 @@ class ProductController extends Controller
             'gallery_images.min' => 'En az 1 adet alt görsel gerekli.',
             'price.required' => 'Satış fiyatı gerekli.',
             'cost_price.required' => 'Maliyet gerekli.',
-            'stock_quantity.required' => 'Stok miktarı gerekli.',
             'min_order_quantity.required' => 'Minimum sipariş miktarı gerekli.',
             'is_active.required' => 'Ürün aktif olmalıdır.',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active');
-        $validated['stock_quantity'] = $validated['stock_quantity'] ?? 0;
-        $validated['min_order_quantity'] = $validated['min_order_quantity'] ?? 1;
 
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('products', 'public');
@@ -118,7 +115,7 @@ class ProductController extends Controller
 
         Product::create($validated);
 
-        return redirect()->route('admin.products.index')
+        return redirect()->route('admin.products.index', ['scroll' => 'top'])
             ->with('success', 'Ürün oluşturuldu.');
     }
 
@@ -132,7 +129,10 @@ class ProductController extends Controller
         return view('admin.products.edit', compact('product', 'categories'));
     }
 
-    public function update(Request $request, Product $product): RedirectResponse
+    /**
+     * @return RedirectResponse|JsonResponse
+     */
+    public function update(Request $request, Product $product)
     {
         $badgeKeys = array_keys(config('sera.product_featured_badges', []));
         $originKeys = array_keys(config('sera.origin_options', []));
@@ -161,12 +161,7 @@ class ProductController extends Controller
             'unit_conversions' => ['nullable', 'array'],
             'unit_conversions.*.unit' => ['nullable', 'string', 'in:' . implode(',', $unitKeys) ?: 'adet'],
             'unit_conversions.*.adet' => ['nullable', 'integer', 'min:1'],
-            'stock_quantity' => ['required', 'integer', 'min:0'],
-            'min_order_quantity' => ['required', 'integer', 'min:1'],
             'is_active' => ['required', 'accepted'],
-            'critical_stock_type' => ['nullable', 'string', 'in:percent,quantity'],
-            'critical_stock_value' => ['nullable', 'integer', 'min:0'],
-            'critical_stock_reference' => ['nullable', 'integer', 'min:1'],
             'featured_badges' => ['nullable', 'array'],
             'featured_badges.*' => ['string', 'in:' . implode(',', $badgeKeys) ?: 'none'],
             'origin' => ['nullable', 'string', 'in:' . implode(',', $originKeys) ?: ''],
@@ -183,18 +178,17 @@ class ProductController extends Controller
             'gallery_images.min' => 'En az 1 adet alt görsel gerekli.',
             'price.required' => 'Satış fiyatı gerekli.',
             'cost_price.required' => 'Maliyet gerekli.',
-            'stock_quantity.required' => 'Stok miktarı gerekli.',
-            'min_order_quantity.required' => 'Minimum sipariş miktarı gerekli.',
             'is_active.required' => 'Ürün aktif olmalıdır.',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active');
-        $validated['stock_quantity'] = $validated['stock_quantity'] ?? 0;
-        $validated['min_order_quantity'] = $validated['min_order_quantity'] ?? 1;
 
         // Ana görsel zorunlu (mevcut veya yeni)
         if (! $request->hasFile('image') && ($request->boolean('remove_image') || ! $product->image)) {
-            return back()->withErrors(['image' => 'Ana görsel gerekli.'])->withInput();
+            $errors = ['image' => ['Ana görsel gerekli.']];
+            return $request->expectsJson()
+                ? response()->json(['message' => 'The given data was invalid.', 'errors' => $errors], 422)
+                : back()->withErrors($errors)->withInput();
         }
 
         // En az 1 alt görsel (mevcut kalan + yeni)
@@ -208,23 +202,28 @@ class ProductController extends Controller
         }
         $newCount = $request->hasFile('gallery_images') ? count($request->file('gallery_images')) : 0;
         if ($keptCount + $newCount < 1) {
-            return back()->withErrors(['gallery_images' => 'En az 1 adet alt görsel gerekli.'])->withInput();
+            $errors = ['gallery_images' => ['En az 1 adet alt görsel gerekli.']];
+            return $request->expectsJson()
+                ? response()->json(['message' => 'The given data was invalid.', 'errors' => $errors], 422)
+                : back()->withErrors($errors)->withInput();
         }
 
+        // Ana görsel güncelleme: yeni dosya varsa öncelikli, yoksa remove_image kontrolü
         if ($request->hasFile('image')) {
+            // Yeni dosya seçildi: eskiyi sil, yenisini kaydet (remove_image işaretliyse bile yeni dosya öncelikli)
             if ($product->image) {
                 Storage::disk('public')->delete($product->image);
             }
             $validated['image'] = $request->file('image')->store('products', 'public');
-        } else {
-            unset($validated['image']);
-        }
-
-        if ($request->boolean('remove_image')) {
+        } elseif ($request->boolean('remove_image')) {
+            // Yeni dosya yok ama kaldırma isteği var: görseli kaldır
             if ($product->image) {
                 Storage::disk('public')->delete($product->image);
             }
             $validated['image'] = null;
+        } else {
+            // Ne yeni dosya ne kaldırma → mevcut görseli koru (image alanına dokunma)
+            unset($validated['image']);
         }
 
         $gallery = [];
@@ -258,7 +257,7 @@ class ProductController extends Controller
 
         $product->update($validated);
 
-        return redirect()->route('admin.products.index')
+        return redirect()->route('admin.products.index', ['scroll' => 'top'])
             ->with('success', 'Ürün güncellendi.');
     }
 
@@ -273,7 +272,7 @@ class ProductController extends Controller
 
         $product->delete();
 
-        return redirect()->route('admin.products.index')
+        return redirect()->route('admin.products.index', ['scroll' => 'top'])
             ->with('success', 'Ürün silindi.');
     }
 

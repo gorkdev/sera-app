@@ -64,7 +64,7 @@ new class extends Component
 };
 ?>
 
-<div>
+<div id="top">
     <div class="admin-page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-semibold text-base-content">Ürünler</h1>
