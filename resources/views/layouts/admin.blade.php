@@ -100,14 +100,18 @@
                             <span>Menüler</span>
                         </a></li>
                         <li class="menu-title px-3 py-2 mt-4 text-base-content/50 text-xs font-semibold uppercase tracking-wider">Satış</li>
-                        <li><a href="#" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 opacity-60">
-                            @svg('heroicon-o-calendar-days', 'h-5 w-5 shrink-0')
-                            <span>Partiler</span>
-                        </a></li>
-                        <li><a href="#" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 opacity-60">
-                            @svg('heroicon-o-square-3-stack-3d', 'h-5 w-5 shrink-0')
-                            <span>Stoklar</span>
-                        </a></li>
+                        <li>
+                            <a href="{{ route('admin.parties.index') }}" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 {{ request()->routeIs('admin.parties.*') ? 'active bg-primary/10 text-primary' : '' }}">
+                                @svg('heroicon-o-calendar-days', 'h-5 w-5 shrink-0 opacity-70')
+                                <span>Partiler</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('admin.stocks.index') }}" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 {{ request()->routeIs('admin.stocks.*') ? 'active bg-primary/10 text-primary' : '' }}">
+                                @svg('heroicon-o-square-3-stack-3d', 'h-5 w-5 shrink-0 opacity-70')
+                                <span>Stoklar</span>
+                            </a>
+                        </li>
                         <li><a href="#" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 opacity-60">
                             @svg('heroicon-o-shopping-cart', 'h-5 w-5 shrink-0')
                             <span>Siparişler</span>
@@ -120,10 +124,12 @@
                                 <span>Bayi Listesi</span>
                             </a>
                         </li>
-                        <li><a href="#" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 opacity-60">
-                            @svg('heroicon-o-user-group', 'h-5 w-5 shrink-0')
-                            <span>Gruplar</span>
-                        </a></li>
+                        <li>
+                            <a href="{{ route('admin.groups.index') }}" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 {{ request()->routeIs('admin.groups.*') ? 'active bg-primary/10 text-primary' : '' }}">
+                                @svg('heroicon-o-user-group', 'h-5 w-5 shrink-0 opacity-70')
+                                <span>Gruplar</span>
+                            </a>
+                        </li>
                         <li class="menu-title px-3 py-2 mt-4 text-base-content/50 text-xs font-semibold uppercase tracking-wider">Sistem</li>
                         <li><a href="#" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 opacity-60">
                             @svg('heroicon-o-shield-check', 'h-5 w-5 shrink-0')

@@ -1,18 +1,4 @@
 <div>
-    {{-- Livewire flash messages --}}
-    @if (session()->has('success'))
-        <div role="alert" class="alert alert-success mb-4 shadow-sm">
-            @svg('heroicon-s-check-circle', 'h-5 w-5 shrink-0')
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-    @if (session()->has('error'))
-        <div role="alert" class="alert alert-error mb-4 shadow-sm">
-            @svg('heroicon-s-x-circle', 'h-5 w-5 shrink-0')
-            <span>{{ session('error') }}</span>
-        </div>
-    @endif
-
     <div class="admin-page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-semibold text-base-content">Bayiler</h1>
@@ -83,9 +69,9 @@
                             </td>
                             <td class="hidden md:table-cell">
                                 @if ($dealer->email)
-                                    <span class="text-sm cursor-pointer hover:text-primary transition-colors" 
-                                          data-copy-text="{{ $dealer->email }}" 
-                                          title="Kopyalamak için tıklayın">{{ $dealer->email }}</span>
+                                    <span class="text-sm cursor-pointer hover:text-primary transition-colors"
+                                        data-copy-text="{{ $dealer->email }}"
+                                        title="Kopyalamak için tıklayın">{{ $dealer->email }}</span>
                                 @else
                                     <span class="text-sm">—</span>
                                 @endif
@@ -114,9 +100,10 @@
                                     }
                                 @endphp
                                 @if ($phoneValue)
-                                    <code class="text-xs bg-base-200 px-1.5 py-0.5 rounded cursor-pointer hover:bg-base-300 transition-colors" 
-                                          data-copy-text="{{ $phoneValue }}" 
-                                          title="Kopyalamak için tıklayın">{{ $formattedPhone }}</code>
+                                    <code
+                                        class="text-xs bg-base-200 px-1.5 py-0.5 rounded cursor-pointer hover:bg-base-300 transition-colors"
+                                        data-copy-text="{{ $phoneValue }}"
+                                        title="Kopyalamak için tıklayın">{{ $formattedPhone }}</code>
                                 @else
                                     <code class="text-xs bg-base-200 px-1.5 py-0.5 rounded">—</code>
                                 @endif
@@ -147,7 +134,7 @@
                                 {{ optional($dealer->group)->name ?? '—' }}
                             </td>
                             <td class="hidden xl:table-cell text-sm text-base-content/70">
-                                {{ $dealer->created_at?->format('d.m.Y') ?? '—' }}
+                                {{ formatliTarih($dealer->created_at) ?? '—' }}
                             </td>
                             <td class="text-right">
                                 <div class="flex justify-end gap-1">

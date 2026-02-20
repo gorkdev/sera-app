@@ -35,6 +35,9 @@
 
             {{-- Mobile menu + Desktop actions --}}
             <div class="navbar-end gap-2">
+                {{-- Cart icon (Livewire) --}}
+                <livewire:cart-icon />
+
                 <div class="dropdown dropdown-end lg:hidden">
                     <div tabindex="0" role="button" class="btn btn-ghost btn-square" aria-label="Menüyü aç">
                         @svg('heroicon-o-bars-3', 'h-6 w-6')
