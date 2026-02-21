@@ -167,8 +167,14 @@ class CartService
             - $partyStock->sold_quantity
             - ($partyStock->waste_quantity ?? 0);
 
+        $dealer->refresh();
         if ($dealer->hasPenalty()) {
-            throw new \InvalidArgumentException('Süre dolduğu için geçici olarak alışveriş yapamazsınız.');
+            $mins = $dealer->penaltyRemainingMinutes();
+            $msg = 'Süre dolduğu için geçici olarak alışveriş yapamazsınız.';
+            if ($mins !== null) {
+                $msg .= ' ' . $mins . ' dakika sonra tekrar deneyebilirsiniz.';
+            }
+            throw new \InvalidArgumentException($msg);
         }
 
         DB::transaction(function () use ($dealer, $product, $partyStock, $quantity, $available) {
@@ -301,7 +307,8 @@ class CartService
     }
 
     /**
-     * Süresi dolmuş sepeti expire et: rezervasyonları serbest bırak, ceza uygula.
+     * Süresi dolmuş sepeti expire et: rezervasyonları serbest bırak.
+     * Ceza yalnızca sepette (rezerve) ürün varken süre bitmişse uygulanır.
      */
     public function expireCart(Cart $cart): void
     {
@@ -309,12 +316,16 @@ class CartService
             return;
         }
 
-        DB::transaction(function () use ($cart) {
+        $hadItems = $cart->items()->count() > 0;
+
+        DB::transaction(function () use ($cart, $hadItems) {
             $this->stockService->releaseCartReservations($cart);
             $cart->update(['status' => Cart::STATUS_EXPIRED]);
 
-            $penaltyMinutes = config('sera.cart.penalty_duration_minutes', 10);
-            $cart->dealer->update(['penalty_until' => now()->addMinutes($penaltyMinutes)]);
+            if ($hadItems) {
+                $penaltyMinutes = config('sera.cart.penalty_duration_minutes', 10);
+                $cart->dealer->update(['penalty_until' => now()->addMinutes($penaltyMinutes)]);
+            }
         });
     }
 

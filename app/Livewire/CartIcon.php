@@ -14,6 +14,12 @@ class CartIcon extends Component
     public bool $open = false;
     public bool $showCheckoutModal = false;
 
+    /** Ürünü tamamen silmek için onay modalı */
+    public ?int $confirmRemoveProductId = null;
+
+    /** Sepeti tamamen temizlemek için onay modalı */
+    public bool $showClearConfirm = false;
+
     public function mount(): void
     {
         //
@@ -36,6 +42,36 @@ class CartIcon extends Component
         $this->open = ! $this->open;
     }
 
+    /** Tamamen silme onay modalını aç */
+    public function openRemoveConfirm(int $productId): void
+    {
+        $this->confirmRemoveProductId = $productId;
+    }
+
+    public function cancelRemoveConfirm(): void
+    {
+        $this->confirmRemoveProductId = null;
+    }
+
+    /** Onaylandı: ürünü sil ve stok güncellemesi için event gönder */
+    public function confirmRemoveItem(CartService $cartService): void
+    {
+        if ($this->confirmRemoveProductId === null) {
+            return;
+        }
+        $productId = $this->confirmRemoveProductId;
+        $this->confirmRemoveProductId = null;
+        $this->removeItem($productId, $cartService);
+        $this->dispatchCartUpdated($cartService);
+    }
+
+    private function dispatchCartUpdated(?CartService $cartService = null): void
+    {
+        $dealer = $this->dealer();
+        $totalQuantity = $dealer && $cartService ? $cartService->getTotalQuantity($dealer) : 0;
+        $this->dispatch('cart-updated', totalQuantity: $totalQuantity);
+    }
+
     public function removeItem(int $productId, CartService $cartService): void
     {
         $dealer = $this->dealer();
@@ -48,6 +84,25 @@ class CartIcon extends Component
                 session()->put('cart', $cart);
             }
         }
+    }
+
+    /** Sepeti temizle onay modalını aç */
+    public function openClearConfirm(): void
+    {
+        $this->showClearConfirm = true;
+    }
+
+    public function cancelClearConfirm(): void
+    {
+        $this->showClearConfirm = false;
+    }
+
+    /** Onaylandı: sepeti temizle ve stok güncellemesi için event gönder */
+    public function confirmClearCart(CartService $cartService): void
+    {
+        $this->showClearConfirm = false;
+        $this->clear($cartService);
+        $this->dispatchCartUpdated($cartService);
     }
 
     public function clear(CartService $cartService): void
@@ -66,8 +121,9 @@ class CartIcon extends Component
         if ($dealer) {
             try {
                 $cartService->incrementItem($dealer, $productId);
+                $this->dispatchCartUpdated($cartService);
             } catch (\InvalidArgumentException $e) {
-                $this->dispatch('show-toast', ['type' => 'error', 'message' => $e->getMessage()]);
+                $this->dispatch('show-toast', type: 'error', message: $e->getMessage());
             }
         } else {
             $cart = session('cart', []);
@@ -76,6 +132,17 @@ class CartIcon extends Component
                 session()->put('cart', $cart);
             }
         }
+    }
+
+    /** Miktar 1 ise önce silme onayı aç, değilse direkt azalt. */
+    public function decrementOrConfirmRemove(int $productId, int $currentQuantity, CartService $cartService): void
+    {
+        if ($currentQuantity <= 1) {
+            $this->openRemoveConfirm($productId);
+            return;
+        }
+        $this->decrementItem($productId, $cartService);
+        $this->dispatchCartUpdated($cartService);
     }
 
     public function decrementItem(int $productId, CartService $cartService): void
@@ -110,15 +177,9 @@ class CartIcon extends Component
         }
 
         if ($cartService->extendTimer($dealer)) {
-            $this->dispatch('show-toast', [
-                'type' => 'success',
-                'message' => 'Sepet süresi 5 dakika uzatıldı.',
-            ]);
+            $this->dispatch('show-toast', type: 'success', message: 'Sepet süresi 5 dakika uzatıldı.');
         } else {
-            $this->dispatch('show-toast', [
-                'type' => 'error',
-                'message' => 'Süre uzatılamadı. Zaten kullanılmış veya süre dolmuş olabilir.',
-            ]);
+            $this->dispatch('show-toast', type: 'error', message: 'Süre uzatılamadı. Zaten kullanılmış veya süre dolmuş olabilir.');
         }
     }
 
@@ -131,8 +192,9 @@ class CartIcon extends Component
         if ($dealer) {
             try {
                 $cartService->updateQuantity($dealer, $productId, $delta);
+                $this->dispatchCartUpdated($cartService);
             } catch (\InvalidArgumentException $e) {
-                $this->dispatch('show-toast', ['type' => 'error', 'message' => $e->getMessage()]);
+                $this->dispatch('show-toast', type: 'error', message: $e->getMessage());
             }
         } else {
             $cart = session('cart', []);
@@ -171,8 +233,9 @@ class CartIcon extends Component
         }
         try {
             $cartService->setItemQuantity($dealer, $productId, $qty);
+            $this->dispatchCartUpdated($cartService);
         } catch (\InvalidArgumentException $e) {
-            $this->dispatch('show-toast', ['type' => 'error', 'message' => $e->getMessage()]);
+            $this->dispatch('show-toast', type: 'error', message: $e->getMessage());
         }
     }
 
@@ -187,27 +250,18 @@ class CartIcon extends Component
         }
 
         if ($cartModel && $cartModel->timer_expires_at && now()->gte($cartModel->timer_expires_at)) {
-            $this->dispatch('show-toast', [
-                'type' => 'error',
-                'message' => 'Sepet süresi dolmuş. Lütfen sepete tekrar ürün ekleyin.',
-            ]);
+            $this->dispatch('show-toast', type: 'error', message: 'Sepet süresi dolmuş. Lütfen sepete tekrar ürün ekleyin.');
             return;
         }
 
         if (! $dealer) {
-            $this->dispatch('show-toast', [
-                'type' => 'error',
-                'message' => 'Satın almak için önce bayi girişi yapmalısınız.',
-            ]);
+            $this->dispatch('show-toast', type: 'error', message: 'Satın almak için önce bayi girişi yapmalısınız.');
             return;
         }
 
         foreach ($cart as $item) {
             if (! ($item['in_stock'] ?? true)) {
-                $this->dispatch('show-toast', [
-                    'type' => 'error',
-                    'message' => 'Sepette stokta olmayan ürün var. Rezerve edilemez.',
-                ]);
+                $this->dispatch('show-toast', type: 'error', message: 'Sepette stokta olmayan ürün var. Rezerve edilemez.');
                 return;
             }
         }
@@ -225,10 +279,7 @@ class CartIcon extends Component
         $dealer = $this->dealer();
         if (! $dealer) {
             $this->showCheckoutModal = false;
-            $this->dispatch('show-toast', [
-                'type' => 'error',
-                'message' => 'Satın almak için önce bayi girişi yapmalısınız.',
-            ]);
+            $this->dispatch('show-toast', type: 'error', message: 'Satın almak için önce bayi girişi yapmalısınız.');
             return;
         }
 
@@ -242,10 +293,7 @@ class CartIcon extends Component
         foreach ($itemsForDisplay as $item) {
             if (! ($item['in_stock'] ?? true)) {
                 $this->showCheckoutModal = false;
-                $this->dispatch('show-toast', [
-                    'type' => 'error',
-                    'message' => 'Sepette stokta olmayan ürün var. Rezerve edilemez.',
-                ]);
+                $this->dispatch('show-toast', type: 'error', message: 'Sepette stokta olmayan ürün var. Rezerve edilemez.');
                 return;
             }
         }
@@ -255,15 +303,9 @@ class CartIcon extends Component
             $this->open = false;
             $this->showCheckoutModal = false;
 
-            $this->dispatch('show-toast', [
-                'type' => 'success',
-                'message' => 'Siparişiniz oluşturuldu. Sipariş no: ' . $order->order_number,
-            ]);
+            $this->dispatch('show-toast', type: 'success', message: 'Siparişiniz oluşturuldu. Sipariş no: ' . $order->order_number);
         } catch (\Throwable $e) {
-            $this->dispatch('show-toast', [
-                'type' => 'error',
-                'message' => $e->getMessage() ?: 'Sipariş oluşturulurken bir hata oluştu.',
-            ]);
+            $this->dispatch('show-toast', type: 'error', message: $e->getMessage() ?: 'Sipariş oluşturulurken bir hata oluştu.');
         }
     }
 
@@ -304,6 +346,11 @@ class CartIcon extends Component
             $showTimerWarning = ! $isExpired && $timerRemainingSeconds <= ($warningMinutes * 60);
         }
 
+        $confirmRemoveProductName = '';
+        if ($this->confirmRemoveProductId !== null && isset($cart[$this->confirmRemoveProductId])) {
+            $confirmRemoveProductName = $cart[$this->confirmRemoveProductId]['name'] ?? '';
+        }
+
         return view('components.⚡cart-icon', [
             'cartItems' => $cart,
             'totalQuantity' => $total,
@@ -317,6 +364,7 @@ class CartIcon extends Component
             'canExtend' => $canExtend,
             'isExpired' => $isExpired,
             'showTimerWarning' => $showTimerWarning,
+            'confirmRemoveProductName' => $confirmRemoveProductName,
         ]);
     }
 }

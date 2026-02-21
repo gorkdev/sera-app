@@ -51,7 +51,7 @@ class Order extends Model
         return $this->belongsTo(Cart::class);
     }
 
-    public function status(): BelongsTo
+    public function orderStatus(): BelongsTo
     {
         return $this->belongsTo(OrderStatus::class, 'order_status_id');
     }

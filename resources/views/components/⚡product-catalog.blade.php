@@ -3,6 +3,7 @@
 use App\Models\Category;
 use App\Models\Product;
 use App\Services\CartService;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -12,11 +13,21 @@ new class extends Component {
     public ?int $selectedCategory = null;
     public string $search = '';
 
+    /** Sepete ekle hatası – kullanıcıya gösterilir */
+    public ?string $addToCartError = null;
+
     protected $queryString = [
         'selectedCategory' => ['except' => null],
         'search' => ['except' => ''],
         'page' => ['except' => 1],
     ];
+
+    /** Sepet güncellenince (ürün silindi/azaldı) stok listesini yenile. */
+    #[On('cart-updated')]
+    public function onCartUpdated(): void
+    {
+        // Re-render: getProductsProperty tekrar çalışır, reserved_quantity güncel olur
+    }
 
     public function updatingSelectedCategory(): void
     {
@@ -44,39 +55,30 @@ new class extends Component {
     public function addToCart(int $productId, int $quantity = 1, ?CartService $cartService = null): void
     {
         if (! auth()->guard('dealer')->check()) {
-            $this->dispatch('show-toast', [
-                'type' => 'error',
-                'message' => 'Fiyatları görmek ve sepete eklemek için önce bayi girişi yapmalısınız.',
-            ]);
+            $this->dispatch('show-toast', type: 'error', message: 'Fiyatları görmek ve sepete eklemek için önce bayi girişi yapmalısınız.');
             return;
         }
 
         $product = Product::find($productId);
         if (! $product || ! $product->is_active) {
-            $this->dispatch('show-toast', [
-                'type' => 'error',
-                'message' => 'Bu ürün şu anda satışta değil.',
-            ]);
+            $this->dispatch('show-toast', type: 'error', message: 'Bu ürün şu anda satışta değil.');
             return;
         }
 
         $cartService = $cartService ?? app(CartService::class);
         $dealer = auth()->guard('dealer')->user();
 
+        $this->addToCartError = null;
         try {
             $cartService->addItem($dealer, $productId, $quantity);
             $totalQuantity = $cartService->getTotalQuantity($dealer);
 
             $this->dispatch('cart-updated', totalQuantity: $totalQuantity);
-            $this->dispatch('show-toast', [
-                'type' => 'success',
-                'message' => $product->name . ' sepete eklendi.',
-            ]);
+            $this->dispatch('show-toast', type: 'success', message: $product->name . ' sepete eklendi.');
         } catch (\Throwable $e) {
-            $this->dispatch('show-toast', [
-                'type' => 'error',
-                'message' => $e->getMessage() ?: 'Sepete eklenirken bir hata oluştu.',
-            ]);
+            $msg = $e->getMessage() ?: 'Sepete eklenirken bir hata oluştu.';
+            $this->addToCartError = $msg;
+            $this->dispatch('show-toast', type: 'error', message: $msg);
         }
     }
 
@@ -237,6 +239,17 @@ new class extends Component {
 
             {{-- Sağ: Ürünler Grid --}}
             <div class="flex-1 min-w-0">
+                @if ($addToCartError)
+                    <div class="alert alert-error shadow-lg mb-4" role="alert">
+                        <div class="flex-1">
+                            <p class="font-semibold">Sepete eklenemedi</p>
+                            <p class="text-sm opacity-90">{{ $addToCartError }}</p>
+                        </div>
+                        <button type="button" wire:click="$set('addToCartError', null)" class="btn btn-ghost btn-sm btn-circle" aria-label="Kapat">
+                            @svg('heroicon-o-x-mark', 'h-5 w-5')
+                        </button>
+                    </div>
+                @endif
                 {{-- Filtreler ve Sonuç Sayısı --}}
                 <div class="mb-4 flex items-center justify-between flex-wrap gap-3">
                     <div class="flex items-center gap-2 flex-wrap">

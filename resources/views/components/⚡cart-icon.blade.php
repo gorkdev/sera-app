@@ -35,17 +35,18 @@
                         <span
                             class="inline-flex items-center gap-1.5 text-xs font-medium {{ $showTimerWarning ?? false ? 'text-warning' : 'text-base-content/70' }}">
                             @svg('heroicon-o-clock', 'h-4 w-4 shrink-0 align-middle')
-                            <span>Kalan: <span x-data="{
-                                expiresAt: {{ $timerExpiresAtTimestampMs ?? 0 }},
-                                sec: 0,
-                                startTimer() {
-                                    const update = () => {
-                                        this.sec = Math.max(0, Math.floor((this.expiresAt - Date.now()) / 1000));
-                                    };
-                                    update();
-                                    setInterval(update.bind(this), 1000);
-                                }
-                            }" x-init="startTimer()"
+                            <span>Kalan: <span wire:key="cart-timer-{{ $timerExpiresAtTimestampMs ?? 0 }}"
+                                    x-data="{
+                                        expiresAt: {{ $timerExpiresAtTimestampMs ?? 0 }},
+                                        sec: 0,
+                                        startTimer() {
+                                            const update = () => {
+                                                this.sec = Math.max(0, Math.floor((this.expiresAt - Date.now()) / 1000));
+                                            };
+                                            update();
+                                            setInterval(update.bind(this), 1000);
+                                        }
+                                    }" x-init="startTimer()"
                                     x-text="Math.floor(sec/60) + ':' + String(Math.floor(sec%60)).padStart(2,'0')"></span></span>
                         </span>
                         @if ($canExtend ?? false)
@@ -89,25 +90,12 @@
                                     {{ $item['name'] }}
                                 </p>
                                 <div class="flex items-center gap-2 mt-1 flex-wrap">
-                                    @isset($item['in_stock'])
-                                        @if ($item['in_stock'])
-                                            <span class="badge badge-success badge-xs gap-0.5">
-                                                @svg('heroicon-o-check-circle', 'h-2.5 w-2.5')
-                                                <span class="text-[10px]">Stokta var</span>
-                                            </span>
-                                        @else
-                                            <span class="badge badge-error badge-xs gap-0.5">
-                                                @svg('heroicon-o-x-circle', 'h-2.5 w-2.5')
-                                                <span class="text-[10px]">Stokta yok</span>
-                                            </span>
-                                        @endif
-                                    @endisset
                                     {{-- Miktar azalt-artır --}}
                                     <div class="relative cart-qty-group inline-flex items-center">
                                         <div class="join join-xs border border-base-300 rounded-md overflow-hidden inline-flex items-stretch"
                                             wire:key="qty-{{ $item['product_id'] }}-{{ (int) $item['quantity'] }}">
                                             <button type="button"
-                                                wire:click="decrementItem({{ $item['product_id'] }})"
+                                                wire:click="decrementOrConfirmRemove({{ $item['product_id'] }}, {{ (int) $item['quantity'] }})"
                                                 class="join-item btn btn-ghost btn-xs px-2 h-7 min-h-0 flex items-center justify-center">
                                                 -
                                             </button>
@@ -138,7 +126,7 @@
                                         data-value="{{ (float) $item['quantity'] * (float) $item['price'] }}">{{ number_format($item['quantity'] * $item['price'], 2, ',', '.') }}</span>
                                     ₺
                                 </p>
-                                <button type="button" wire:click="removeItem({{ $item['product_id'] }})"
+                                <button type="button" wire:click="openRemoveConfirm({{ $item['product_id'] }})"
                                     class="btn btn-ghost btn-xs text-error gap-1" title="Sepetten çıkar">
                                     @svg('heroicon-o-trash', 'h-3.5 w-3.5')
                                     <span>Kaldır</span>
@@ -159,7 +147,7 @@
                             data-value="{{ $subtotal }}">{{ number_format($subtotal, 2, ',', '.') }}</span> ₺
                     </span>
                 </div>
-                <button type="button" wire:click="clear" class="btn btn-ghost btn-xs gap-1 text-base-content/70"
+                <button type="button" wire:click="openClearConfirm" class="btn btn-ghost btn-xs gap-1 text-base-content/70"
                     @disabled(empty($cartItems))>
                     @svg('heroicon-o-trash', 'h-3.5 w-3.5')
                     <span>Sepeti Temizle</span>
@@ -172,6 +160,48 @@
         </div>
     </div>
 
+    @if ($showClearConfirm ?? false)
+        <div class="fixed inset-0 z-[60] flex items-center justify-center">
+            <div class="absolute inset-0 bg-base-content/50 backdrop-blur-sm" wire:click="cancelClearConfirm"></div>
+            <div
+                class="relative bg-base-100 rounded-lg shadow-2xl border border-base-300 w-full max-w-md mx-4 p-5 z-[61]">
+                <h3 class="text-lg font-semibold mb-2">Sepeti temizle</h3>
+                <p class="text-sm text-base-content/70 mb-4">
+                    Sepetteki tüm ürünleri kaldırmak ve rezervasyonları serbest bırakmak istediğinize emin misiniz?
+                </p>
+                <div class="flex justify-end gap-2 mt-4">
+                    <button type="button" class="btn btn-ghost btn-sm" wire:click="cancelClearConfirm">
+                        İptal
+                    </button>
+                    <button type="button" class="btn btn-error btn-sm" wire:click="confirmClearCart">
+                        Sepeti Temizle
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if ($confirmRemoveProductId ?? null)
+        <div class="fixed inset-0 z-[60] flex items-center justify-center">
+            <div class="absolute inset-0 bg-base-content/50 backdrop-blur-sm" wire:click="cancelRemoveConfirm"></div>
+            <div
+                class="relative bg-base-100 rounded-lg shadow-2xl border border-base-300 w-full max-w-md mx-4 p-5 z-[61]">
+                <h3 class="text-lg font-semibold mb-2">Ürünü sepetten çıkar</h3>
+                <p class="text-sm text-base-content/70 mb-4">
+                    <strong>{{ $confirmRemoveProductName ?? '' }}</strong> ürününü sepetten tamamen çıkarmak istediğinize emin misiniz? Rezervasyon kaldırılacak ve stok serbest kalacaktır.
+                </p>
+                <div class="flex justify-end gap-2 mt-4">
+                    <button type="button" class="btn btn-ghost btn-sm" wire:click="cancelRemoveConfirm">
+                        İptal
+                    </button>
+                    <button type="button" class="btn btn-error btn-sm" wire:click="confirmRemoveItem">
+                        Sepetten Çıkar
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
     @if ($showCheckoutModal)
         <div class="fixed inset-0 z-[60] flex items-center justify-center">
             <div class="absolute inset-0 bg-base-content/50 backdrop-blur-sm" wire:click="closeCheckoutModal"></div>
@@ -179,7 +209,7 @@
                 class="relative bg-base-100 rounded-lg shadow-2xl border border-base-300 w-full max-w-md mx-4 p-5 z-[61]">
                 <h3 class="text-lg font-semibold mb-2">Satın Almayı Onayla</h3>
                 <p class="text-sm text-base-content/70 mb-4">
-                    Sepetinizdeki ürünleri satın almak ve stokta sizin adınıza rezerve etmek üzeresiniz.
+                    Sepetinizdeki ürünleri satın almak üzeresiniz.
                 </p>
                 <div class="mb-4 text-sm">
                     <div class="flex justify-between mb-1">

@@ -24,7 +24,7 @@ class StockService
                 - ($partyStock->waste_quantity ?? 0);
 
             if ($quantity > $available) {
-                throw new \InvalidArgumentException("Yetersiz stok. Mevcut: {$available}, İstenen: {$quantity}");
+                throw new \InvalidArgumentException("Yetersiz stok. En fazla {$available} adet alabilirsiniz.");
             }
 
             $partyStock->increment('reserved_quantity', $quantity);

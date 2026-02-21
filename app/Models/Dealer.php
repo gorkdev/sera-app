@@ -65,6 +65,24 @@ class Dealer extends Authenticatable
 
     public function hasPenalty(): bool
     {
-        return $this->penalty_until && now()->lt($this->penalty_until);
+        if (! $this->penalty_until) {
+            return false;
+        }
+        // Ceza süresi geçmişse ceza yok; geçmiş kaydı temizle
+        if (now()->gte($this->penalty_until)) {
+            $this->update(['penalty_until' => null]);
+            return false;
+        }
+        return true;
+    }
+
+    /** Ceza süresi dolana kadar kalan dakika (en az 1). */
+    public function penaltyRemainingMinutes(): ?int
+    {
+        if (! $this->penalty_until || ! now()->lt($this->penalty_until)) {
+            return null;
+        }
+
+        return max(1, (int) ceil($this->penalty_until->diffInSeconds(now(), false) / 60));
     }
 }

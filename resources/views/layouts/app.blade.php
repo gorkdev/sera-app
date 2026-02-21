@@ -16,27 +16,27 @@
 </head>
 
 <body class="min-h-screen flex flex-col bg-base-200 antialiased">
-    {{-- Navbar --}}
-    <header class="sticky top-0 z-50 border-b border-base-300 bg-base-100 transition-none">
+    {{-- Navbar: wire:ignore ile Livewire DOM değişikliklerinden korunur (tıklanabilirlik için) --}}
+    <header wire:ignore class="sticky top-0 z-[100] border-b border-base-300 bg-base-100 transition-none">
         <nav class="navbar container mx-auto px-4 lg:px-6" aria-label="Ana menü">
             {{-- Logo --}}
             <div class="navbar-start min-w-0">
-                <a href="{{ url('/') }}" class="btn btn-ghost gap-2 px-2 text-xl font-semibold tracking-tight">
+                <a href="{{ route('home') }}" class="btn btn-ghost gap-2 px-2 text-xl font-semibold tracking-tight">
                     <span class="text-primary">Sera</span>
                 </a>
             </div>
 
             {{-- Desktop nav --}}
-            <div class="navbar-center hidden lg:flex">
+            <div class="navbar-center hidden lg:flex relative z-10">
                 <ul class="menu menu-horizontal gap-1 px-1 font-medium">
-                    <li><a href="{{ url('/') }}" class="rounded-lg">Anasayfa</a></li>
+                    <li><a href="{{ route('home') }}" class="rounded-lg">Anasayfa</a></li>
                     @guest('dealer')
                         <li><a href="{{ route('dealer.login') }}" class="rounded-lg">Bayi Girişi</a></li>
                         <li><a href="{{ route('admin.login') }}" class="rounded-lg">Yönetim</a></li>
                     @else
+                        <li><a href="{{ route('dealer.orders') }}" class="rounded-lg">Siparişler</a></li>
                         <li>
-                            <a href="{{ route('dealer.login') }}" class="rounded-lg"
-                                onclick="event.preventDefault(); document.getElementById('nav-logout-form').submit();">Çıkış yap</a>
+                            <a href="#" class="rounded-lg" onclick="event.preventDefault(); document.getElementById('nav-logout-form').submit();">Çıkış yap</a>
                         </li>
                     @endguest
                 </ul>
@@ -57,14 +57,14 @@
                     </div>
                     <ul tabindex="0"
                         class="menu dropdown-content menu-sm dropdown-content mt-3 w-52 rounded-box border border-base-300 bg-base-100 p-2 shadow-xl">
-                        <li><a href="{{ url('/') }}">Anasayfa</a></li>
+                        <li><a href="{{ route('home') }}">Anasayfa</a></li>
                         @guest('dealer')
                             <li><a href="{{ route('dealer.login') }}">Bayi Girişi</a></li>
                             <li><a href="{{ route('admin.login') }}">Yönetim</a></li>
                         @else
+                            <li><a href="{{ route('dealer.orders') }}">Siparişler</a></li>
                             <li>
-                                <a href="{{ route('dealer.login') }}"
-                                    onclick="event.preventDefault(); document.getElementById('nav-logout-form').submit();">Çıkış yap</a>
+                                <a href="#" class="rounded-lg" onclick="event.preventDefault(); document.getElementById('nav-logout-form').submit();">Çıkış yap</a>
                             </li>
                         @endguest
                     </ul>
@@ -88,6 +88,27 @@
             </div>
         </div>
     @endif
+
+    {{-- Ceza uyarısı: sepet süresi dolunca tüm ürünlerin üstünde gösterilir --}}
+    @auth('dealer')
+        @php $dealer = auth()->guard('dealer')->user(); $dealer->refresh(); @endphp
+        @if ($dealer->hasPenalty())
+            <div class="container mx-auto px-4 pt-4" role="alert">
+                <div class="alert alert-warning shadow-lg flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div class="flex-1">
+                        <p class="font-semibold">Sepet süreniz doldu</p>
+                        <p class="text-sm opacity-90">
+                            Belirlenen süre içinde satın alımı tamamlamadığınız için rezervasyonlarınız serbest bırakıldı.
+                            <strong>{{ $dealer->penaltyRemainingMinutes() }} dakika</strong> alışveriş yapamazsınız.
+                        </p>
+                    </div>
+                    <span class="badge badge-warning badge-lg shrink-0">
+                        Kalan: {{ $dealer->penaltyRemainingMinutes() }} dk
+                    </span>
+                </div>
+            </div>
+        @endif
+    @endauth
 
     {{-- Main content --}}
     <main class="flex-1">
@@ -116,25 +137,59 @@
         </div>
     </footer>
 
-    {{-- Global toast (any component can dispatch show-toast) --}}
-    <div id="toast-container" class="toast toast-top toast-center z-[100]" style="display: none;">
-        <div id="toast-alert" class="alert shadow-lg min-w-[300px]">
-            <span id="toast-message" class="font-medium"></span>
-        </div>
-    </div>
+    {{-- Global toast stack: üst üste, büyükten küçüğe (en yeni en büyük, max 5) --}}
+    <style>
+        #toast-stack-container { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 100; width: min(90vw, 360px); min-height: 3rem; pointer-events: none; }
+        #toast-stack-container .toast-item { position: absolute; left: 0; right: 0; transition: all 0.2s ease; transform-origin: top center; pointer-events: auto; }
+        #toast-stack-container .toast-item.toast-enter { animation: toastSlideIn 0.3s ease-out; }
+        @keyframes toastSlideIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+    <div id="toast-stack-container"></div>
     <script>
         document.addEventListener('livewire:init', () => {
-            Livewire.on('show-toast', (event) => {
-                const container = document.getElementById('toast-container');
-                const alert = document.getElementById('toast-alert');
-                const message = document.getElementById('toast-message');
-                if (!container || !alert || !message) return;
-                const payload = Array.isArray(event) ? event[0] : (event?.detail ?? event);
+            const MAX_TOASTS = 5;
+            const TOAST_DURATION = 3000;
+            const STACK_OFFSET = 10;
+            const MIN_SCALE = 0.82;
+            const container = document.getElementById('toast-stack-container');
+            if (!container) return;
+
+            function updateToastStack() {
+                const children = container.querySelectorAll('.toast-item');
+                const n = children.length;
+                children.forEach((el, i) => {
+                    const scale = n <= 1 ? 1 : MIN_SCALE + (1 - MIN_SCALE) * (i / (n - 1));
+                    const top = i * STACK_OFFSET;
+                    el.style.top = top + 'px';
+                    el.style.transform = 'scale(' + scale + ')';
+                    el.style.zIndex = i;
+                });
+            }
+
+            Livewire.on('show-toast', (...args) => {
+                const event = args[0];
+                let payload = {};
+                if (event && typeof event === 'object') {
+                    if (event.detail != null) {
+                        const d = event.detail;
+                        payload = Array.isArray(d) ? (d[0] ?? {}) : (d || {});
+                    } else if ('message' in event || 'type' in event) {
+                        payload = event;
+                    }
+                }
                 const type = payload?.type === 'success' ? 'alert-success' : 'alert-error';
-                alert.className = 'alert shadow-lg min-w-[300px] ' + type;
-                message.textContent = payload?.message ?? '';
-                container.style.display = 'block';
-                setTimeout(() => { container.style.display = 'none'; }, 3000);
+                const msg = payload?.message || '';
+                if (!msg) return;
+                const toast = document.createElement('div');
+                toast.className = 'toast-item toast-enter alert shadow-lg min-w-[280px] ' + type;
+                toast.innerHTML = '<span class="font-medium">' + String(msg).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
+                container.appendChild(toast);
+                while (container.children.length > MAX_TOASTS) container.removeChild(container.firstChild);
+                updateToastStack();
+                setTimeout(() => {
+                    toast.remove();
+                    updateToastStack();
+                }, TOAST_DURATION);
             });
         });
     </script>
