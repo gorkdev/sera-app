@@ -29,6 +29,7 @@ class Dealer extends Authenticatable
         'address',
         'kvkk_consent',
         'status',
+        'penalty_until',
     ];
 
     public function group(): BelongsTo
@@ -38,7 +39,7 @@ class Dealer extends Authenticatable
 
     public function cart(): HasOne
     {
-        return $this->hasOne(Cart::class);
+        return $this->hasOne(Cart::class)->where('status', Cart::STATUS_ACTIVE)->latest();
     }
 
     protected $hidden = [
@@ -49,5 +50,21 @@ class Dealer extends Authenticatable
     protected $casts = [
         'kvkk_consent' => 'boolean',
         'email_verified_at' => 'datetime',
+        'penalty_until' => 'datetime',
     ];
+
+    public function orders(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function carts(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Cart::class);
+    }
+
+    public function hasPenalty(): bool
+    {
+        return $this->penalty_until && now()->lt($this->penalty_until);
+    }
 }

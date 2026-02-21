@@ -70,6 +70,16 @@ class Party extends Model
         return $this->hasMany(PartyStock::class);
     }
 
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function carts(): HasMany
+    {
+        return $this->hasMany(Cart::class);
+    }
+
     /**
      * Net maliyet hesapla (birim başına)
      */

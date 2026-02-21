@@ -138,7 +138,7 @@
                         <span class="label-text font-medium">Mevcut Stok</span>
                     </label>
                     <div class="input input-bordered input-md w-full bg-base-200" readonly>
-                        <span class="{{ $stock->available_quantity > 0 ? 'text-success font-medium' : 'text-error' }}">
+                        <span id="mevcut-stok-value" class="{{ $stock->available_quantity > 0 ? 'text-success font-medium' : 'text-error' }}">
                             {{ number_format($stock->available_quantity, 0, ',', '.') }}
                         </span>
                     </div>
@@ -439,6 +439,28 @@
     </form>
 
     <script>
+        (function() {
+            const reserved = {{ (int) $stock->reserved_quantity }};
+            const sold = {{ (int) $stock->sold_quantity }};
+            const totalInput = document.getElementById('total_quantity');
+            const wasteInput = document.getElementById('waste_quantity');
+            const mevcutSpan = document.getElementById('mevcut-stok-value');
+
+            function updateMevcutStok() {
+                const total = parseInt(totalInput?.value || 0, 10) || 0;
+                const waste = parseInt(wasteInput?.value || 0, 10) || 0;
+                const available = Math.max(0, total - reserved - sold - waste);
+                if (!mevcutSpan) return;
+                mevcutSpan.textContent = available.toLocaleString('tr-TR');
+                mevcutSpan.className = available > 0 ? 'text-success font-medium' : 'text-error';
+            }
+
+            totalInput?.addEventListener('input', updateMevcutStok);
+            totalInput?.addEventListener('change', updateMevcutStok);
+            wasteInput?.addEventListener('input', updateMevcutStok);
+            wasteInput?.addEventListener('change', updateMevcutStok);
+        })();
+
         function confirmDeleteWaste(wasteLogId, quantity, wasteType) {
             const modal = document.getElementById('confirm_delete_waste_modal');
             const title = document.getElementById('confirm_delete_waste_title');

@@ -89,4 +89,9 @@ class PartyStock extends Model
     {
         return $this->hasMany(WasteLog::class);
     }
+
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(StockReservation::class);
+    }
 }

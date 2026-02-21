@@ -139,6 +139,39 @@
         });
     </script>
 
+    <script>
+        (function() {
+            const formatNumberTR = (num) => num.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const lastValues = {};
+            window.runCartNumberAnimation = function() {
+                document.querySelectorAll('.cart-animate-number').forEach((el) => {
+                    const key = el.dataset.key;
+                    const target = parseFloat(el.dataset.value || 0) || 0;
+                    const start = lastValues[key];
+                    lastValues[key] = target;
+                    if (start === undefined || start === target) {
+                        el.textContent = formatNumberTR(target);
+                        return;
+                    }
+                    const duration = 400;
+                    const startTime = performance.now();
+                    function step(now) {
+                        const elapsed = now - startTime;
+                        const t = Math.min(elapsed / duration, 1);
+                        const ease = 1 - Math.pow(1 - t, 2);
+                        const current = start + (target - start) * ease;
+                        el.textContent = formatNumberTR(current);
+                        if (t < 1) requestAnimationFrame(step);
+                    }
+                    requestAnimationFrame(step);
+                });
+            };
+        })();
+        document.addEventListener('DOMContentLoaded', runCartNumberAnimation);
+        document.addEventListener('livewire:init', () => {
+            Livewire.hook('commit', ({ succeed }) => succeed(runCartNumberAnimation));
+        });
+    </script>
     @livewireScripts
     @stack('scripts')
 </body>

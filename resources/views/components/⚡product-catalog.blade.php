@@ -41,19 +41,18 @@ new class extends Component {
         $this->resetPage();
     }
 
-    public function addToCart(int $productId, int $quantity = 1, CartService $cartService = null): void
+    public function addToCart(int $productId, int $quantity = 1, ?CartService $cartService = null): void
     {
-        if (!auth()->guard('dealer')->check()) {
+        if (! auth()->guard('dealer')->check()) {
             $this->dispatch('show-toast', [
                 'type' => 'error',
                 'message' => 'Fiyatları görmek ve sepete eklemek için önce bayi girişi yapmalısınız.',
             ]);
-
             return;
         }
 
         $product = Product::find($productId);
-        if (!$product || !$product->is_active) {
+        if (! $product || ! $product->is_active) {
             $this->dispatch('show-toast', [
                 'type' => 'error',
                 'message' => 'Bu ürün şu anda satışta değil.',
@@ -63,15 +62,22 @@ new class extends Component {
 
         $cartService = $cartService ?? app(CartService::class);
         $dealer = auth()->guard('dealer')->user();
-        $cartService->addItem($dealer, $productId, $quantity);
 
-        $totalQuantity = $cartService->getTotalQuantity($dealer);
+        try {
+            $cartService->addItem($dealer, $productId, $quantity);
+            $totalQuantity = $cartService->getTotalQuantity($dealer);
 
-        $this->dispatch('cart-updated', totalQuantity: $totalQuantity);
-        $this->dispatch('show-toast', [
-            'type' => 'success',
-            'message' => $product->name . ' sepete eklendi.',
-        ]);
+            $this->dispatch('cart-updated', totalQuantity: $totalQuantity);
+            $this->dispatch('show-toast', [
+                'type' => 'success',
+                'message' => $product->name . ' sepete eklendi.',
+            ]);
+        } catch (\Throwable $e) {
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'message' => $e->getMessage() ?: 'Sepete eklenirken bir hata oluştu.',
+            ]);
+        }
     }
 
     public function getCategoriesProperty()
@@ -97,7 +103,13 @@ new class extends Component {
             ->with('category');
 
         if ($this->selectedCategory) {
-            $query->where('category_id', $this->selectedCategory);
+            $cat = Category::with('children')->find($this->selectedCategory);
+            if ($cat && $cat->children->isNotEmpty()) {
+                $ids = $cat->children->pluck('id')->push($cat->id)->all();
+                $query->whereIn('category_id', $ids);
+            } else {
+                $query->where('category_id', $this->selectedCategory);
+            }
         }
 
         if (!empty(trim($this->search))) {
@@ -188,6 +200,16 @@ new class extends Component {
                                     <div id="{{ $panelId }}"
                                         class="ml-5 mt-0.5 space-y-0.5 overflow-hidden transition-all duration-200 {{ $isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0' }}"
                                         data-open="{{ $isOpen ? '1' : '0' }}">
+                                        {{-- Tüm Kategoriler: her zaman en üstte, o ana kategoriye ait her şey --}}
+                                        <a wire:click="selectCategory({{ $category->id }})"
+                                            wire:key="cat-all-{{ $category->id }}"
+                                            class="flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs transition-all duration-150 {{ $selectedCategory == $category->id ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-base-200 text-base-content/70' }}"
+                                            href="javascript:void(0)">
+                                            <span class="truncate">Hepsi</span>
+                                            @if ($selectedCategory == $category->id)
+                                                @svg('heroicon-o-check-circle', 'h-3.5 w-3.5 text-primary')
+                                            @endif
+                                        </a>
                                         @if ($category->children->count() > 0)
                                             @foreach ($category->children as $child)
                                                 <a wire:click="selectCategory({{ $child->id }})"
@@ -260,18 +282,51 @@ new class extends Component {
                     @forelse($this->products as $product)
                         <div class="group bg-base-100 rounded-lg shadow-sm border border-base-300/50 hover:shadow-md hover:border-primary/30 hover:-translate-y-1 transition-all duration-200 overflow-hidden"
                             wire:key="product-{{ $product->id }}">
-                            {{-- Ürün Görseli --}}
-                            <div class="relative aspect-square overflow-hidden bg-base-200">
-                                @if ($product->image)
-                                    <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}"
-                                        alt="{{ $product->name }}"
-                                        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                                        loading="lazy" />
-                                @else
-                                    <div class="w-full h-full flex items-center justify-center">
-                                        @svg('heroicon-o-photo', 'h-10 w-10 text-base-content/20')
-                                    </div>
-                                @endif
+                            {{-- Ürün Görseli: Sol hover = ana resim, Sağ hover = 2. resim (galeri) --}}
+                            @php
+                                $mainImg = $product->image;
+                                $galleryImgs = $product->gallery_images ?? [];
+                                $secondImg = $galleryImgs[0] ?? null;
+                            @endphp
+                            <div class="product-image-split relative aspect-square overflow-hidden bg-base-200">
+                                {{-- Hover bölgeleri: sol/sağ yarım --}}
+                                <div class="left-half absolute inset-0 z-10 w-1/2 cursor-default" aria-hidden="true">
+                                </div>
+                                <div class="right-half absolute inset-y-0 right-0 z-10 w-1/2 cursor-default"
+                                    aria-hidden="true"></div>
+
+                                {{-- Ana resim (sol hover) --}}
+                                <div class="img-main absolute inset-0 transition-opacity duration-200">
+                                    @if ($mainImg)
+                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($mainImg) }}"
+                                            alt="{{ $product->name }}"
+                                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                            loading="lazy" />
+                                    @else
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            @svg('heroicon-o-photo', 'h-10 w-10 text-base-content/20')
+                                        </div>
+                                    @endif
+                                </div>
+
+                                {{-- 2. resim (sağ hover) - yoksa ana resim fallback --}}
+                                <div class="img-gallery absolute inset-0 opacity-0 transition-opacity duration-200">
+                                    @if ($secondImg)
+                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($secondImg) }}"
+                                            alt="{{ $product->name }}"
+                                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                            loading="lazy" />
+                                    @elseif ($mainImg)
+                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($mainImg) }}"
+                                            alt="{{ $product->name }}"
+                                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                            loading="lazy" />
+                                    @else
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            @svg('heroicon-o-photo', 'h-10 w-10 text-base-content/20')
+                                        </div>
+                                    @endif
+                                </div>
 
                                 {{-- Badges --}}
                                 @if ($product->featured_badges && count($product->featured_badges) > 0)
@@ -287,10 +342,10 @@ new class extends Component {
                                 @php $available = (int) ($product->available_display ?? 0); @endphp
 
 
-                                {{-- Hover Overlay --}}
+                                {{-- Hover Overlay (pointer-events: none ile sol/sağ hover bölgeleri çalışır; buton tıklanabilir) --}}
                                 <div
-                                    class="absolute inset-0 bg-gradient-to-t from-base-content/70 via-base-content/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end">
-                                    <div class="w-full p-2">
+                                    class="absolute inset-0 z-20 bg-gradient-to-t from-base-content/70 via-base-content/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end pointer-events-none">
+                                    <div class="w-full p-2 pointer-events-auto">
                                         @if (auth()->guard('dealer')->check())
                                             <button wire:click="addToCart({{ $product->id }})"
                                                 class="w-full btn btn-primary btn-xs gap-1 shadow-lg"
@@ -328,19 +383,21 @@ new class extends Component {
                                                 Fiyatları görmek için bayi girişi yapın.
                                             </p>
                                         @endif
-                                        <div class="flex items-center gap-1.5 flex-wrap">
-                                            @if ($available > 0)
-                                                <span class="badge badge-success badge-xs gap-0.5">
-                                                    @svg('heroicon-o-check-circle', 'h-2.5 w-2.5')
-                                                    <span class="text-[10px]">Stokta var</span>
-                                                </span>
-                                            @else
-                                                <span class="badge badge-error badge-xs gap-0.5">
-                                                    @svg('heroicon-o-x-circle', 'h-2.5 w-2.5')
-                                                    <span class="text-[10px]">Stokta yok</span>
-                                                </span>
-                                            @endif
-                                        </div>
+                                        @if (auth()->guard('dealer')->check())
+                                            <div class="flex items-center gap-1.5 flex-wrap">
+                                                @if ($available > 0)
+                                                    <span class="badge badge-success badge-xs gap-0.5">
+                                                        @svg('heroicon-o-check-circle', 'h-2.5 w-2.5')
+                                                        <span class="text-[10px]">Stokta var</span>
+                                                    </span>
+                                                @else
+                                                    <span class="badge badge-error badge-xs gap-0.5">
+                                                        @svg('heroicon-o-x-circle', 'h-2.5 w-2.5')
+                                                        <span class="text-[10px]">Stokta yok</span>
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        @endif
                                     </div>
 
                                     {{-- Mobile Sepete Ekle Butonu --}}
@@ -399,6 +456,25 @@ new class extends Component {
             </div>
         </div>
     </div>
+
+    <style>
+        /* Ürün resmi: sol hover = ana, sağ hover = galeri */
+        .product-image-split:has(.right-half:hover) .img-main {
+            opacity: 0;
+        }
+
+        .product-image-split:has(.right-half:hover) .img-gallery {
+            opacity: 1;
+        }
+
+        .product-image-split:has(.left-half:hover) .img-main {
+            opacity: 1;
+        }
+
+        .product-image-split:has(.left-half:hover) .img-gallery {
+            opacity: 0;
+        }
+    </style>
 
     <script>
         // Kategori aç/kapa animasyonu

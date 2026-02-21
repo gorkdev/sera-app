@@ -65,6 +65,41 @@ class Product extends Model
         return $this->hasMany(PartyStock::class);
     }
 
+    /**
+     * Aktif partilerdeki mevcut stok miktarı (total - reserved - sold - waste)
+     */
+    public function getAvailableStock(): int
+    {
+        return (int) (static::getAvailableStockForProductIds([$this->id])[$this->id] ?? 0);
+    }
+
+    /**
+     * Birden fazla ürün için mevcut stok miktarlarını tek sorguda döner [product_id => available]
+     */
+    public static function getAvailableStockForProductIds(array $productIds): array
+    {
+        if (empty($productIds)) {
+            return [];
+        }
+
+        $rows = \Illuminate\Support\Facades\DB::table('party_stocks as ps')
+            ->join('parties as p', 'p.id', '=', 'ps.party_id')
+            ->whereIn('ps.product_id', $productIds)
+            ->where('p.status', 'active')
+            ->whereNull('p.deleted_at')
+            ->whereNotNull('p.arrived_at')
+            ->groupBy('ps.product_id')
+            ->selectRaw('ps.product_id, COALESCE(SUM(ps.total_quantity - ps.reserved_quantity - ps.sold_quantity - COALESCE(ps.waste_quantity, 0)), 0) as available')
+            ->get();
+
+        $result = array_fill_keys($productIds, 0);
+        foreach ($rows as $row) {
+            $result[(int) $row->product_id] = (int) $row->available;
+        }
+
+        return $result;
+    }
+
     public function getFormattedPriceAttribute(): string
     {
         return number_format($this->price, 2, ',', '.') . ' ₺';
