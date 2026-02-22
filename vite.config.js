@@ -14,9 +14,10 @@ export default defineConfig({
         watch: {
             ignored: ["**/storage/framework/views/**"],
         },
-        host: "0.0.0.0", // Dış erişime izin ver
+        host: "0.0.0.0",
         hmr: {
-            host: "192.168.1.103", // Kendi yerel IP adresini buraya yaz
+            host: "localhost",
+            port: 5173,
         },
     },
 });

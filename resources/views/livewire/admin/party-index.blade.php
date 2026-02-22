@@ -2,7 +2,7 @@
     <div class="admin-page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-semibold text-base-content">Partiler</h1>
-            <p class="mt-1 text-sm text-base-content/60">Parti bazlı satış sezonlarını yönetin. Aktif parti bayilerin görebileceği partidir.</p>
+            <p class="mt-1 text-sm text-base-content/60">Parti bazlı satış sezonlarını yönetin. Başlangıç tarihinde otomatik sipariş almaya başlar, bitiş tarihinde veya stok bitince otomatik kapanır.</p>
         </div>
         <a href="{{ route('admin.parties.create') }}" class="btn btn-primary gap-2 shrink-0">
             @svg('heroicon-o-plus', 'h-4 w-4')
@@ -41,9 +41,9 @@
                         <th>Parti</th>
                         <th class="hidden md:table-cell">Açıklama</th>
                         <th class="w-24">Durum</th>
-                        <th class="hidden lg:table-cell w-32">Tedarikçi</th>
-                        <th class="hidden xl:table-cell w-28">Varış</th>
-                        <th class="hidden xl:table-cell w-28">Aktif Edilme</th>
+                        <th class="hidden lg:table-cell w-32">Başlangıç</th>
+                        <th class="hidden xl:table-cell w-32">Bitiş</th>
+                        <th class="hidden xl:table-cell w-28">Tedarikçi</th>
                         <th class="w-32 text-right">İşlemler</th>
                     </tr>
                 </thead>
@@ -87,24 +87,23 @@
                                 <span class="badge {{ $statusClass }} badge-sm">{{ $statusLabel }}</span>
                             </td>
                             <td class="hidden lg:table-cell text-sm text-base-content/70">
+                                @if($party->starts_at)
+                                    {{ formatliTarih($party->starts_at) }}
+                                @else
+                                    <span class="text-base-content/40">—</span>
+                                @endif
+                            </td>
+                            <td class="hidden xl:table-cell text-sm text-base-content/70">
+                                @if($party->ends_at)
+                                    {{ formatliTarih($party->ends_at) }}
+                                @elseif($party->close_when_stock_runs_out)
+                                    <span class="text-xs text-base-content/50">Stok bitene kadar</span>
+                                @else
+                                    <span class="text-base-content/40">—</span>
+                                @endif
+                            </td>
+                            <td class="hidden xl:table-cell text-sm text-base-content/70">
                                 {{ $party->supplier_name ?? '—' }}
-                            </td>
-                            <td class="hidden xl:table-cell text-sm text-base-content/70">
-                                @if($party->arrived_at)
-                                    {{ formatliTarih($party->arrived_at) }}
-                                    @if($party->journey_days)
-                                        <div class="text-xs text-base-content/50">({{ $party->journey_days }} gün)</div>
-                                    @endif
-                                @else
-                                    <span class="text-base-content/40">—</span>
-                                @endif
-                            </td>
-                            <td class="hidden xl:table-cell text-sm text-base-content/70">
-                                @if($party->activated_at)
-                                    {{ formatliTarih($party->activated_at) }}
-                                @else
-                                    <span class="text-base-content/40">—</span>
-                                @endif
                             </td>
                             <td class="text-right">
                                 <div class="flex justify-end gap-1">
@@ -113,13 +112,22 @@
                                             class="btn btn-ghost btn-sm btn-square" title="Düzenle">
                                             @svg('heroicon-o-pencil-square', 'h-4 w-4')
                                         </a>
-                                        <form method="POST" action="{{ route('admin.parties.activate', $party) }}" class="inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-ghost btn-sm btn-square text-success hover:bg-success/10"
-                                                title="Aktif Et">
-                                                @svg('heroicon-o-check-circle', 'h-4 w-4')
-                                            </button>
-                                        </form>
+                                        @if($hasActiveParty)
+                                            <span class="tooltip tooltip-left" data-tip="Önce mevcut partiyi kapatın. Aynı anda tek parti açık olabilir.">
+                                                <button type="button" class="btn btn-ghost btn-sm btn-square text-success/50 cursor-not-allowed" disabled
+                                                    title="Önce mevcut partiyi kapatın">
+                                                    @svg('heroicon-o-check-circle', 'h-4 w-4')
+                                                </button>
+                                            </span>
+                                        @else
+                                            <form method="POST" action="{{ route('admin.parties.activate', $party) }}" class="inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-ghost btn-sm btn-square text-success hover:bg-success/10"
+                                                    title="Aktif Et">
+                                                    @svg('heroicon-o-check-circle', 'h-4 w-4')
+                                                </button>
+                                            </form>
+                                        @endif
                                     @endif
                                     @if($party->isActive())
                                         <form method="POST" action="{{ route('admin.parties.close', $party) }}" class="inline">

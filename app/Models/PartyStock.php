@@ -12,6 +12,8 @@ class PartyStock extends Model
         'party_id',
         'product_id',
         'location',
+        'cost_price_override',
+        'price_override',
         'total_quantity',
         'reserved_quantity',
         'sold_quantity',
@@ -24,6 +26,8 @@ class PartyStock extends Model
         'sold_quantity' => 'integer',
         'waste_quantity' => 'integer',
         'freshness_score' => 'decimal:2',
+        'cost_price_override' => 'decimal:2',
+        'price_override' => 'decimal:2',
     ];
 
     public function party(): BelongsTo

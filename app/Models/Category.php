@@ -16,11 +16,13 @@ class Category extends Model
         'description',
         'image',
         'sort_order',
+        'activation_delay_minutes',
         'is_active',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'activation_delay_minutes' => 'integer',
     ];
 
     public function parent(): BelongsTo

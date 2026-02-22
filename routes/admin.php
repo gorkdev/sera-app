@@ -48,6 +48,7 @@ Route::middleware(['admin.auth'])->name('admin.')->group(function () {
     // Partiler — /yonetim/partiler
     Route::get('partiler', [PartyController::class, 'index'])->name('parties.index');
     Route::get('partiler/olustur', [PartyController::class, 'create'])->name('parties.create');
+    Route::get('partiler/kategori/{category:id}/urunler', [PartyController::class, 'productsByCategory'])->name('parties.products-by-category');
     Route::post('partiler', [PartyController::class, 'store'])->name('parties.store');
     Route::get('partiler/{party}', [PartyController::class, 'edit'])->name('parties.edit');
     Route::put('partiler/{party}', [PartyController::class, 'update'])->name('parties.update');

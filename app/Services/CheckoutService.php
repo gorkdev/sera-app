@@ -91,6 +91,12 @@ class CheckoutService
 
             $cart->update(['status' => Cart::STATUS_COMPLETED]);
 
+            // Stok biten partiyi otomatik kapat (close_when_stock_runs_out)
+            $party = $order->party;
+            if ($party && $party->isActive() && $party->close_when_stock_runs_out && !$party->hasAvailableStock()) {
+                $party->markClosed();
+            }
+
             return $order;
         });
     }

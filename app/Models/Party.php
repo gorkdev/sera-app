@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -17,6 +18,12 @@ class Party extends Model
         'description',
         'supplier_name',
         'truck_plate',
+        'driver_name',
+        'driver_contact',
+        'emergency_contact',
+        'truck_status',
+        'departure_at',
+        'estimated_arrival_at',
         'journey_days',
         'purchase_price_per_unit',
         'logistics_cost',
@@ -25,6 +32,11 @@ class Party extends Model
         'status',
         'activated_at',
         'arrived_at',
+        'florist_delivery_at',
+        'starts_at',
+        'ends_at',
+        'close_when_stock_runs_out',
+        'visible_to_all',
         'closed_at',
         'created_by',
         'closed_by',
@@ -37,6 +49,13 @@ class Party extends Model
         'customs_cost' => 'decimal:2',
         'activated_at' => 'datetime',
         'arrived_at' => 'datetime',
+        'starts_at' => 'datetime',
+        'ends_at' => 'datetime',
+        'close_when_stock_runs_out' => 'boolean',
+        'visible_to_all' => 'boolean',
+        'departure_at' => 'datetime',
+        'estimated_arrival_at' => 'datetime',
+        'florist_delivery_at' => 'datetime',
         'closed_at' => 'datetime',
     ];
 
@@ -65,6 +84,31 @@ class Party extends Model
         return $this->status === 'closed';
     }
 
+    /**
+     * Partide satılabilir (mevcut) stok var mı?
+     * Mevcut = total - reserved - sold - waste
+     */
+    public function hasAvailableStock(): bool
+    {
+        $total = $this->stocks()
+            ->get()
+            ->sum(fn (\App\Models\PartyStock $ps) => max(0, $ps->total_quantity - $ps->reserved_quantity - $ps->sold_quantity - ($ps->waste_quantity ?? 0)));
+
+        return $total > 0;
+    }
+
+    /**
+     * Partiyi kapat (closed_at, closed_by set eder).
+     */
+    public function markClosed(?int $closedBy = null): void
+    {
+        $this->update([
+            'status' => 'closed',
+            'closed_at' => now(),
+            'closed_by' => $closedBy ?? auth('admin')?->id(),
+        ]);
+    }
+
     public function stocks(): HasMany
     {
         return $this->hasMany(PartyStock::class);
@@ -78,6 +122,13 @@ class Party extends Model
     public function carts(): HasMany
     {
         return $this->hasMany(Cart::class);
+    }
+
+    public function dealerGroups(): BelongsToMany
+    {
+        return $this->belongsToMany(DealerGroup::class, 'party_dealer_group')
+            ->withPivot('delay_minutes')
+            ->withTimestamps();
     }
 
     /**

@@ -40,12 +40,21 @@
         </div>
     </div>
 
-    @if($party->isActive() || $party->isClosed())
+    @if($party->isActive())
+        <div class="alert alert-info mb-6">
+            @svg('heroicon-o-information-circle', 'h-5 w-5 shrink-0')
+            <div>
+                <p class="font-medium">Aktif parti</p>
+                <p class="text-sm opacity-90">Aktif partide sadece <strong>Varış Tarihi</strong> ve <strong>Yolculuk Süresi</strong> güncellenebilir. Tır geldiğinde varış tarihini işaretleyin.</p>
+            </div>
+        </div>
+    @endif
+    @if($party->isClosed())
         <div class="alert alert-warning mb-6">
             @svg('heroicon-o-exclamation-triangle', 'h-5 w-5 shrink-0')
             <div>
-                <p class="font-medium">Düzenleme kısıtlı</p>
-                <p class="text-sm opacity-90">Aktif veya kapalı partiler düzenlenemez. Sadece taslak partiler düzenlenebilir.</p>
+                <p class="font-medium">Kapalı parti</p>
+                <p class="text-sm opacity-90">Kapalı partiler düzenlenemez.</p>
             </div>
         </div>
     @endif
@@ -112,6 +121,51 @@
             </div>
         </section>
 
+        @if($party->isDraft())
+        {{-- Sipariş Penceresi (sadece taslak) --}}
+        <section class="admin-form-section">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-base-content/70 my-4 flex items-center gap-2">
+                @svg('heroicon-o-calendar', 'h-4 w-4')
+                Sipariş Penceresi
+            </h2>
+            <div class="space-y-4">
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div class="form-control">
+                        <label for="starts_at" class="label">
+                            <span class="label-text font-medium">Sipariş Başlangıç Tarihi <span class="text-error">*</span></span>
+                        </label>
+                        <input type="datetime-local" id="starts_at" name="starts_at"
+                            value="{{ old('starts_at', $party->starts_at?->format('Y-m-d\TH:i')) }}"
+                            class="input input-bordered input-md w-full @error('starts_at') input-error @enderror" required />
+                        @error('starts_at')
+                            <p class="text-error text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div class="form-control" id="ends_at_wrapper">
+                        <label for="ends_at" class="label">
+                            <span class="label-text font-medium">Sipariş Bitiş Tarihi</span>
+                        </label>
+                        <input type="datetime-local" id="ends_at" name="ends_at"
+                            value="{{ old('ends_at', $party->ends_at?->format('Y-m-d\TH:i')) }}"
+                            class="input input-bordered input-md w-full @error('ends_at') input-error @enderror" />
+                        @error('ends_at')
+                            <p class="text-error text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+                <div class="form-control">
+                    <label class="label cursor-pointer justify-start gap-3">
+                        <input type="checkbox" name="close_when_stock_runs_out" value="1"
+                            {{ old('close_when_stock_runs_out', $party->close_when_stock_runs_out) ? 'checked' : '' }}
+                            class="checkbox checkbox-primary checkbox-sm"
+                            id="close_when_stock_runs_out" />
+                        <span class="label-text font-medium">Stok bitene kadar açık tut</span>
+                    </label>
+                </div>
+            </div>
+        </section>
+        @endif
+
         {{-- Lojistik Bilgileri --}}
         <section class="admin-form-section">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-base-content/70 my-4 flex items-center gap-2">
@@ -153,7 +207,7 @@
                         </label>
                         <input type="number" id="journey_days" name="journey_days" value="{{ old('journey_days', $party->journey_days) }}"
                             class="input input-bordered input-md w-full @error('journey_days') input-error @enderror"
-                            @disabled($party->isActive() || $party->isClosed())
+                            @disabled($party->isClosed())
                             min="0" step="1" placeholder="Örn: 3" />
                         @error('journey_days')
                             <p class="text-error text-sm mt-1">{{ $message }}</p>
@@ -166,7 +220,10 @@
                         <input type="datetime-local" id="arrived_at" name="arrived_at" 
                             value="{{ old('arrived_at', $party->arrived_at ? $party->arrived_at->format('Y-m-d\TH:i') : '') }}"
                             class="input input-bordered input-md w-full @error('arrived_at') input-error @enderror"
-                            @disabled($party->isActive() || $party->isClosed()) />
+                            @disabled($party->isClosed()) />
+                        <label class="label">
+                            <span class="label-text-alt">Tır geldiğinde bu alanı doldurun</span>
+                        </label>
                         @error('arrived_at')
                             <p class="text-error text-sm mt-1">{{ $message }}</p>
                         @enderror
@@ -292,13 +349,38 @@
 
         {{-- İşlemler --}}
         <div class="flex flex-wrap items-center gap-3 pt-4 border-t border-base-300">
-            @if($party->isDraft())
+            @if($party->isDraft() || $party->isActive())
                 <button type="submit" class="btn btn-primary gap-2">
                     @svg('heroicon-o-check', 'h-4 w-4')
-                    Değişiklikleri Kaydet
+                    {{ $party->isActive() ? 'Varış Bilgisini Kaydet' : 'Değişiklikleri Kaydet' }}
                 </button>
             @endif
             <a href="{{ route('admin.parties.index') }}" class="btn btn-ghost">İptal</a>
         </div>
     </form>
+
+    @if($party->isDraft())
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkbox = document.getElementById('close_when_stock_runs_out');
+            const endsAtWrapper = document.getElementById('ends_at_wrapper');
+            const endsAtInput = document.getElementById('ends_at');
+            if (!checkbox || !endsAtWrapper) return;
+
+            function toggleEndsAt() {
+                if (checkbox.checked) {
+                    endsAtWrapper.style.opacity = '0.5';
+                    endsAtInput.disabled = true;
+                    endsAtInput.removeAttribute('required');
+                } else {
+                    endsAtWrapper.style.opacity = '1';
+                    endsAtInput.disabled = false;
+                    endsAtInput.setAttribute('required', 'required');
+                }
+            }
+            checkbox.addEventListener('change', toggleEndsAt);
+            toggleEndsAt();
+        });
+    </script>
+    @endif
 @endsection

@@ -53,8 +53,12 @@ class PartyIndex extends Component
             });
         }
 
+        $parties = $query->paginate(20);
+        $hasActiveParty = Party::where('status', 'active')->exists();
+
         return view('livewire.admin.party-index', [
-            'parties' => $query->paginate(20),
+            'parties' => $parties,
+            'hasActiveParty' => $hasActiveParty,
         ]);
     }
 }

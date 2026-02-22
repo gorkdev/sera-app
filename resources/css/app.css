@@ -36,6 +36,11 @@
     }
 }
 
+/* Alpine x-cloak: Alpine yüklenene kadar gizle */
+[x-cloak] {
+    display: none !important;
+}
+
 /* Auth flip kart animasyonu */
 .perspective-1000 {
     perspective: 1000px;
@@ -149,6 +154,29 @@
     padding: 0.5rem 1.5rem 1.5rem;
 }
 
+/* Nizami form: bölüm başlığı ve gövde */
+.form-section-title {
+    @apply text-sm font-semibold uppercase tracking-wider text-base-content/70 my-4 flex items-center gap-2;
+}
+.form-section-body {
+    @apply space-y-6;
+}
+.form-subsection {
+    @apply space-y-4;
+}
+.form-subsection-title {
+    @apply text-xs font-semibold uppercase tracking-wider text-base-content/60 mb-3;
+}
+.form-row {
+    @apply grid gap-4;
+}
+.form-row.form-row-2 {
+    @apply sm:grid-cols-2;
+}
+.form-row.form-row-3 {
+    @apply sm:grid-cols-3;
+}
+
 /* Gelişmiş ayarlar accordion — section ile aynı hizada */
 .admin-form-section .collapse {
     padding-left: 0;
@@ -194,6 +222,11 @@
 .tab.tab-has-error {
     animation: tab-error-blink 1s ease-in-out 4;
     border-radius: 0.5rem;
+}
+
+/* Parti formu: sadece Stok sekmesinde tablo için geniş container */
+.party-form--wide {
+    max-width: 70rem; /* max-w-5xl */
 }
 
 /* Ürün formu: hata durumunda kırmızı border */

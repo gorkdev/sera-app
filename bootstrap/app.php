@@ -34,5 +34,6 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('carts:expire')->everyMinute();
+        $schedule->command('parties:process-schedules')->everyMinute();
     })
     ->create();
