@@ -9,12 +9,16 @@
     @if ($activeCarts->isNotEmpty())
         <div class="card bg-base-100 shadow-sm border border-base-300/50 mb-8">
             <div class="card-body">
-                <h2 class="card-title text-lg">Aktif rezervasyonlar</h2>
-                <p class="text-sm text-base-content/70 mb-4">Sepette rezerve edilmiş ürünler (henüz sipariş tamamlanmadı).</p>
+                <h2 class="card-title text-lg gap-2">
+                    Rezerve ürünler
+                    <span class="badge badge-warning badge-sm">Rezerve</span>
+                </h2>
+                <p class="text-sm text-base-content/70 mb-4">Sepette rezerve edilmiş ürünler. Checkout yapınca sipariş kesinleşir.</p>
                 <div class="overflow-x-auto">
                     <table class="table table-sm">
                         <thead>
                             <tr>
+                                <th>Durum</th>
                                 <th>Parti</th>
                                 <th>Ürün</th>
                                 <th>Adet</th>
@@ -26,6 +30,7 @@
                             @foreach ($activeCarts as $cart)
                                 @foreach ($cart->items as $item)
                                     <tr>
+                                        <td><span class="badge badge-warning badge-sm">Rezerve</span></td>
                                         <td>{{ $cart->party?->name ?? '#' . $cart->party_id }}</td>
                                         <td>{{ $item->product?->name ?? '-' }}</td>
                                         <td>{{ $item->quantity }}</td>
@@ -76,7 +81,11 @@
                                     <td>{{ $order->created_at?->format('d.m.Y H:i') ?? '-' }}</td>
                                     <td>
                                         @if ($order->orderStatus)
-                                            <span class="badge badge-{{ $order->orderStatus->color ?? 'neutral' }} badge-sm">
+                                            @php
+                                                $slug = $order->orderStatus->slug ?? '';
+                                                $isKesinlesti = $slug === 'kesinlesti' || $slug === 'delivered' || $slug === 'confirmed';
+                                            @endphp
+                                            <span class="badge badge-sm {{ $isKesinlesti ? 'badge-success' : 'badge-' . ($order->orderStatus->color ?? 'neutral') }}">
                                                 {{ $order->orderStatus->name }}
                                             </span>
                                         @else

@@ -3,6 +3,7 @@
 use App\Models\Category;
 use App\Models\Product;
 use App\Services\CartService;
+use App\Services\PartyScheduleService;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -27,6 +28,16 @@ new class extends Component {
     public function onCartUpdated(): void
     {
         // Re-render: getProductsProperty tekrar çalışır, reserved_quantity güncel olur
+    }
+
+    /**
+     * Her saniye partileri kontrol et: başlangıç tarihinde stoklar açılır, bitiş tarihinde kapanır.
+     * Kapanan partiye ait sepetler otomatik sonlandırılır; cart-updated ile UI güncellenir.
+     */
+    public function checkPartySchedules(?PartyScheduleService $scheduleService = null): void
+    {
+        ($scheduleService ?? app(PartyScheduleService::class))->processSchedules();
+        $this->dispatch('cart-updated');
     }
 
     public function updatingSelectedCategory(): void
@@ -133,7 +144,7 @@ new class extends Component {
 };
 ?>
 
-<div class="min-h-screen overflow-y-auto">
+<div class="min-h-screen overflow-y-auto" wire:poll.1s="checkPartySchedules">
     <div class="container mx-auto px-4 lg:px-6 py-6 lg:py-8">
         <div class="flex flex-col lg:flex-row gap-6">
             {{-- Sol: Kategoriler Sidebar --}}

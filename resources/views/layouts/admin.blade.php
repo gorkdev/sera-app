@@ -112,10 +112,12 @@
                                 <span>Stoklar</span>
                             </a>
                         </li>
-                        <li><a href="#" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 opacity-60">
-                            @svg('heroicon-o-shopping-cart', 'h-5 w-5 shrink-0')
-                            <span>Siparişler</span>
-                        </a></li>
+                        <li>
+                            <a href="{{ route('admin.orders.index') }}" class="w-full flex items-center gap-3 rounded-lg py-2.5 px-3 {{ request()->routeIs('admin.orders.*') ? 'active bg-primary/10 text-primary' : '' }}">
+                                @svg('heroicon-o-shopping-cart', 'h-5 w-5 shrink-0 opacity-70')
+                                <span>Siparişler</span>
+                            </a>
+                        </li>
                         <li class="menu-title px-3 py-2 mt-4 text-base-content/50 text-xs font-semibold uppercase tracking-wider">Bayiler</li>
                         <li>
                             <a href="{{ route('admin.dealers.index') }}"

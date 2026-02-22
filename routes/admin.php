@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DealerController;
 use App\Http\Controllers\Admin\DealerGroupController;
+use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PartyController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\StockController;
@@ -65,4 +66,8 @@ Route::middleware(['admin.auth'])->name('admin.')->group(function () {
     Route::delete('stoklar/{stock}', [StockController::class, 'destroy'])->name('stocks.destroy');
     Route::post('stoklar/{stock}/zayiat-ekle', [StockController::class, 'addWaste'])->name('stocks.add-waste');
     Route::delete('stoklar/zayiat/{wasteLog}', [StockController::class, 'deleteWaste'])->name('stocks.delete-waste');
+
+    // Siparişler — /yonetim/siparisler
+    Route::get('siparisler', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('siparisler/{order}', [OrderController::class, 'show'])->name('orders.show');
 });

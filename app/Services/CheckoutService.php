@@ -49,7 +49,8 @@ class CheckoutService
             $taxAmount = round($subtotal * $vatRate / 100, 2);
             $total = $subtotal + $taxAmount;
 
-            $defaultStatus = OrderStatus::where('is_default', true)->first()
+            $orderStatus = OrderStatus::where('slug', 'kesinlesti')->first()
+                ?? OrderStatus::where('is_default', true)->first()
                 ?? OrderStatus::orderBy('sort_order')->first();
 
             $order = Order::create([
@@ -57,7 +58,7 @@ class CheckoutService
                 'dealer_id' => $cart->dealer_id,
                 'party_id' => $cart->party_id,
                 'cart_id' => $cart->id,
-                'order_status_id' => $defaultStatus?->id,
+                'order_status_id' => $orderStatus?->id,
                 'delivery_type' => $deliveryType,
                 'subtotal' => $subtotal,
                 'tax_rate' => $vatRate,

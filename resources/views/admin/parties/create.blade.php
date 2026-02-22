@@ -519,7 +519,7 @@
                         <td class="text-right"><input type="number" name="stocks[${p.id}][waste]" min="0" value="${waste}" class="input input-bordered input-sm w-12 text-right stock-waste" data-product-id="${p.id}"></td>
                         <td class="text-right"><span class="stock-net text-sm font-medium tabular-nums" data-product-id="${p.id}">0</span></td>
                         <td class="text-right"><input type="number" name="stocks[${p.id}][cost_price]" step="0.01" min="0" value="${costPrice}" class="input input-bordered input-sm w-24 text-right stock-cost" data-product-id="${p.id}" placeholder="${(p.cost_price ?? 0).toFixed(2)}"></td>
-                        <td class="text-right"><input type="number" name="stocks[${p.id}][price]" step="0.01" min="0" value="${priceVal}" class="input input-bordered input-sm w-24 text-right stock-price" data-product-id="${p.id}" placeholder="${(p.price ?? 0).toFixed(2)}"></td>
+                        <td class="text-right"><input type="number" name="stocks[${p.id}][price]" step="0.01" min="0" value="${priceVal}" readonly class="input input-bordered input-sm w-24 text-right stock-price bg-base-200 read-only:bg-base-200 cursor-default" data-product-id="${p.id}" placeholder="${(p.price ?? 0).toFixed(2)}"></td>
                         <td class="text-right"><span class="stock-profit text-sm font-medium" data-product-id="${p.id}">—</span></td>
                         <td class="text-right"><span class="stock-vat-total text-sm font-medium" data-product-id="${p.id}">—</span></td>
                     </tr>`;

@@ -310,13 +310,13 @@ class CartService
      * Süresi dolmuş sepeti expire et: rezervasyonları serbest bırak.
      * Ceza yalnızca sepette (rezerve) ürün varken süre bitmişse uygulanır.
      */
-    public function expireCart(Cart $cart): void
+    public function expireCart(Cart $cart, bool $applyPenalty = true): void
     {
         if ($cart->status !== Cart::STATUS_ACTIVE) {
             return;
         }
 
-        $hadItems = $cart->items()->count() > 0;
+        $hadItems = $applyPenalty && $cart->items()->count() > 0;
 
         DB::transaction(function () use ($cart, $hadItems) {
             $this->stockService->releaseCartReservations($cart);
@@ -327,6 +327,20 @@ class CartService
                 $cart->dealer->update(['penalty_until' => now()->addMinutes($penaltyMinutes)]);
             }
         });
+    }
+
+    /**
+     * Parti kapatıldığında bu partiye ait tüm aktif sepetleri sonlandır (ceza uygulanmaz).
+     */
+    public function expireCartsForParty(Party $party): void
+    {
+        $carts = Cart::where('party_id', $party->id)
+            ->where('status', Cart::STATUS_ACTIVE)
+            ->get();
+
+        foreach ($carts as $cart) {
+            $this->expireCart($cart, false);
+        }
     }
 
     /**

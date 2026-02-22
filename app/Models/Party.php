@@ -154,7 +154,8 @@ class Party extends Model
     }
 
     /**
-     * Parti kodu otomatik oluştur
+     * Parti kodu otomatik oluştur.
+     * Silinmiş (soft-deleted) partiler de sayılır; böylece aynı kodu tekrar üretmeyiz.
      */
     protected static function booted(): void
     {
@@ -162,11 +163,12 @@ class Party extends Model
             if (empty($party->party_code)) {
                 $year = now()->format('Y');
                 $month = now()->format('m');
-                $lastParty = static::whereYear('created_at', $year)
+                $lastParty = static::withTrashed()
+                    ->whereYear('created_at', $year)
                     ->whereMonth('created_at', $month)
                     ->orderByDesc('id')
                     ->first();
-                
+
                 $sequence = $lastParty ? (int) substr($lastParty->party_code ?? '', -4) + 1 : 1;
                 $party->party_code = sprintf('NL-TR-%s-%s-%04d', $year, $month, $sequence);
             }
